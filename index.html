@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼音奇幻樂園 Pinyin Fantasy Land</title>
+    <!-- Tailwind CSS for vibrant UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for child-friendly typography (Importing Noto Sans TC & HK to guarantee identical rendering) -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Sans+HK:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            /* Smooth fallbacks to ensure "歡" & "拼" render in modern, unified sans-serif fonts */
+            font-family: 'M PLUS Rounded 1c', 'Noto Sans TC', 'Noto Sans HK', 'PingFang HK', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #fef9e7 0%, #ebf5fb 100%);
+            position: relative;
+        }
+        .wood-border {
+            box-shadow: 0 8px 0 #d35400, 0 15px 20px rgba(0,0,0,0.1);
+        }
+        .bouncy {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .cloud-bg {
+            background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 50%),
+                              radial-gradient(circle at 80% 70%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 50%);
+        }
+        /* Custom scrollbar for game cabinets */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #ffd000;
+            border-radius: 10px;
+        }
+
+        /* */
+        .bubble-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .pink-bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 192, 203, 0.45) 0%, rgba(255, 182, 193, 0.15) 70%);
+            border: 1px solid rgba(255, 182, 193, 0.4);
+            filter: blur(1px);
+            animation: float-bubbles 12s infinite ease-in-out;
+        }
+        @keyframes float-bubbles {
+            0%, 100% {
+                transform: translateY(0) translateX(0) scale(1);
+            }
+            50% {
+                transform: translateY(-40px) translateX(20px) scale(1.1);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 cloud-bg overflow-x-hidden pb-12">
+
+    <!-- -->
+    <div class="bubble-container">
+        <div class="pink-bubble w-20 h-20 top-24 left-[8%]" style="animation-delay: 0s; animation-duration: 10s;"></div>
+        <div class="pink-bubble w-32 h-32 top-[60%] left-[4%]" style="animation-delay: 1.5s; animation-duration: 14s;"></div>
+        <div class="pink-bubble w-16 h-16 top-[40%] right-[10%]" style="animation-delay: 3s; animation-duration: 8s;"></div>
+        <div class="pink-bubble w-28 h-28 top-[75%] right-[6%]" style="animation-delay: 0.5s; animation-duration: 12s;"></div>
+        <div class="pink-bubble w-24 h-24 top-[15%] left-[50%] -translate-x-1/2" style="animation-delay: 2s; animation-duration: 11s;"></div>
+    </div>
+
+    <!-- -->
+    <header class="relative z-10 bg-gradient-to-r from-red-400 via-orange-400 via-yellow-400 via-green-400 via-blue-400 to-indigo-400 p-1 shadow-lg">
+        <div class="bg-white/90 backdrop-blur-sm px-6 py-4 flex flex-col md:flex-row items-center justify-between rounded-b-3xl">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('welcome')">
+                <div class="text-4xl bouncy">🎡</div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">拼音奇幻樂園</h1>
+                    <p class="text-xs text-orange-600 font-bold tracking-widest">PINYIN FANTASY LAND • 小二普通話專屬</p>
+                </div>
+            </div>
+            
+            <nav class="flex flex-wrap gap-2 mt-4 md:mt-0 justify-center">
+                <button onclick="switchTab('flashcards')" class="nav-btn bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-full font-bold text-sm transition-all duration-300 shadow-sm flex items-center gap-2">
+                    🎡 學習摩天輪
+                </button>
+                <button onclick="switchTab('practice')" class="nav-btn bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-full font-bold text-sm transition-all duration-300 shadow-sm flex items-center gap-2">
+                    ⛵ 練習碰碰船
+                </button>
+                <button onclick="switchTab('games')" class="nav-btn bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-full font-bold text-sm transition-all duration-300 shadow-sm flex items-center gap-2">
+                    🎮 樂園遊戲區
+                </button>
+                <button onclick="switchTab('challenge')" class="nav-btn bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-full font-bold text-sm transition-all duration-300 shadow-sm flex items-center gap-2">
+                    🏆 樂園大挑戰
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE HUB -->
+    <main class="relative z-10 max-w-6xl mx-auto px-4 mt-8" id="app">
+
+        <!-- -->
+        <section id="welcome-tab" class="tab-content block">
+            <div class="text-center py-12 px-6 bg-white/80 backdrop-blur-md rounded-3xl border-4 border-dashed border-yellow-400 shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-10 -left-10 text-8xl opacity-15 rotate-12">🎈</div>
+                <div class="absolute -bottom-10 -right-10 text-8xl opacity-15 -rotate-12">🎪</div>
+                
+                <span class="bg-yellow-400 text-yellow-900 text-xs font-extrabold px-4 py-1.5 rounded-full uppercase tracking-widest shadow">WELCOME TO PINYIN LAND</span>
+                <h2 class="text-4xl md:text-6xl font-black mt-6 text-indigo-900 leading-tight">歡迎光臨！拼音奇幻樂園 🎠</h2>
+                <p class="text-lg text-slate-600 mt-4 max-w-2xl mx-auto font-medium">
+                    各位小朋友，準備好在樂園裡一邊玩耍一邊學習最標準的普通話拼音了嗎？三大好玩遊戲、摩天輪閃卡與拼拼樂，等著你來挑戰！
+                </p>
+
+                <!-- Audio feedback instruction warning -->
+                <div class="mt-4 inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-sm px-4 py-2 rounded-full font-bold border border-blue-200">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <span>請開啟電腦/平板的聲音，才能聽到好聽的普通話發音哦！</span>
+                </div>
+
+                <!-- Attraction Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-12">
+                    <!-- Card 1 -->
+                    <div onclick="switchTab('flashcards')" class="group cursor-pointer bg-red-50 hover:bg-red-100/80 border-4 border-red-300 rounded-2xl p-6 transition-all duration-300 transform hover:-translate-y-2 shadow-md">
+                        <div class="text-5xl mb-4 group-hover:scale-110 transition-transform">🎡</div>
+                        <h3 class="text-xl font-bold text-red-800">學習摩天輪</h3>
+                        <p class="text-xs text-slate-500 mt-2">點擊超大卡片，聆聽最標準的第一聲發音與實用口訣！</p>
+                    </div>
+                    <!-- Card 2 -->
+                    <div onclick="switchTab('practice')" class="group cursor-pointer bg-blue-50 hover:bg-blue-100/80 border-4 border-blue-300 rounded-2xl p-6 transition-all duration-300 transform hover:-translate-y-2 shadow-md">
+                        <div class="text-5xl mb-4 group-hover:scale-110 transition-transform">⛵</div>
+                        <h3 class="text-xl font-bold text-blue-800">練習碰碰船</h3>
+                        <p class="text-xs text-slate-500 mt-2">自由組合聲母與複韻母，嘗試拼讀四大聲調，神奇發聲！</p>
+                    </div>
+                    <!-- Card 3 -->
+                    <div onclick="switchTab('games')" class="group cursor-pointer bg-green-50 hover:bg-green-100/80 border-4 border-green-300 rounded-2xl p-6 transition-all duration-300 transform hover:-translate-y-2 shadow-md">
+                        <div class="text-5xl mb-4 group-hover:scale-110 transition-transform">🎮</div>
+                        <h3 class="text-xl font-bold text-green-800">樂園遊戲區</h3>
+                        <p class="text-xs text-slate-500 mt-2">聲調碰碰車、猜聲母與找韻母，三款遊戲等你奪高分！</p>
+                    </div>
+                    <!-- Card 4 -->
+                    <div onclick="switchTab('challenge')" class="group cursor-pointer bg-purple-50 hover:bg-purple-100/80 border-4 border-purple-300 rounded-2xl p-6 transition-all duration-300 transform hover:-translate-y-2 shadow-md">
+                        <div class="text-5xl mb-4 group-hover:scale-110 transition-transform">🏆</div>
+                        <h3 class="text-xl font-bold text-purple-800">樂園大挑戰</h3>
+                        <p class="text-xs text-slate-500 mt-2">終極五關綜合大考驗！順利過關可獲得拼音小勇士證書！</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- -->
+        <section id="flashcards-tab" class="tab-content hidden">
+            <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-red-300">
+                <div class="flex items-center justify-between border-b-2 border-red-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🎡</span>
+                        <div>
+                            <h2 class="text-2xl font-black text-red-800">學習摩天輪 (Pinyin Flashcards)</h2>
+                            <p class="text-xs text-slate-500 font-medium">點擊卡片聽讀標準發音，全部已設為標準【第一聲】以利學習。</p>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-red-500 bg-red-50 px-4 py-1 rounded-full border border-red-200">
+                        第一聲
+                    </div>
+                </div>
+
+                <!-- Flashcard sub-tabs -->
+                <div class="flex flex-wrap gap-2 mb-6 bg-red-50/50 p-2 rounded-2xl border border-red-100 justify-center">
+                    <button onclick="filterFlashcards('shengdiao')" id="btn-fc-shengdiao" class="fc-sub-btn bg-red-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow transition-all">
+                        1. 聲調符號
+                    </button>
+                    <button onclick="filterFlashcards('shengmu')" id="btn-fc-shengmu" class="fc-sub-btn hover:bg-red-100 text-red-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all">
+                        2. 聲母 (Bo-Wu)
+                    </button>
+                    <button onclick="filterFlashcards('danyunmu')" id="btn-fc-danyunmu" class="fc-sub-btn hover:bg-red-100 text-red-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all">
+                        3. 單韻母
+                    </button>
+                    <button onclick="filterFlashcards('fuyunmu')" id="btn-fc-fuyunmu" class="fc-sub-btn hover:bg-red-100 text-red-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all">
+                        4. 複韻母
+                    </button>
+                    <button onclick="filterFlashcards('erhua')" id="btn-fc-erhua" class="fc-sub-btn hover:bg-red-100 text-red-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all">
+                        5. 兒化音
+                    </button>
+                </div>
+
+                <!-- Flashcard display grid -->
+                <div id="flashcard-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                    <!-- Cards injected dynamically -->
+                </div>
+
+                <!-- Cantonese helper hint box -->
+                <div class="mt-8 bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-5 flex items-start gap-4">
+                    <span class="text-3xl">💡</span>
+                    <div>
+                        <h4 class="font-bold text-amber-800 text-base">香港小朋友普通話拼音小秘笈</h4>
+                        <p class="text-xs text-amber-700 mt-1 leading-relaxed">
+                            • <strong>聲母 n 和 l 的小秘密</strong>：發 <strong>n</strong> 時要把氣流引進鼻子（鼻音）；發 <strong>l</strong> 時舌頭要頂住上齒齦，氣流從兩邊流走哦！<br>
+                            • <strong>翹舌音 (zh, ch, sh, r)</strong>：廣東話裡沒有翹舌音，發這組音時，記得輕輕把舌尖往上翹起，貼近硬齶的前部，多練習「zhi chi shi ri」！
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- -->
+        <section id="practice-tab" class="tab-content hidden">
+            <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-blue-300">
+                <div class="flex items-center justify-between border-b-2 border-blue-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">⛵</span>
+                        <div>
+                            <h2 class="text-2xl font-black text-blue-800">練習碰碰船 (Pinyin Sandbox)</h2>
+                            <p class="text-xs text-slate-500 font-medium">自由選擇聲母、韻母與聲調組合，聆聽標準發音，探索拼音奧秘！</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Left: Letter selectors -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <!-- Step 1: Initial -->
+                        <div>
+                            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">步驟 1</span>
+                            <h3 class="font-bold text-slate-700 mt-2 mb-3">🎈 選擇聲母：</h3>
+                            <div class="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-slate-100 rounded-xl custom-scroll bg-slate-50" id="sandbox-initials">
+                                <!-- Initials injected by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Final (Simple or Compound) -->
+                        <div>
+                            <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">步驟 2</span>
+                            <h3 class="font-bold text-slate-700 mt-2 mb-3">🎈 選擇韻母 (可選單韻母或複韻母)：</h3>
+                            <div class="flex flex-wrap gap-2 p-2 border border-slate-100 rounded-xl bg-slate-50 mb-3" id="sandbox-finals-simple">
+                                <!-- Simple Finals injected by JS -->
+                            </div>
+                            <div class="flex flex-wrap gap-2 p-2 border border-slate-100 rounded-xl bg-slate-50" id="sandbox-finals-compound">
+                                <!-- Compound Finals injected by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Tone -->
+                        <div>
+                            <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">步驟 3</span>
+                            <h3 class="font-bold text-slate-700 mt-2 mb-3">🎈 選擇聲調：</h3>
+                            <div class="grid grid-cols-4 gap-2" id="sandbox-tones">
+                                <button onclick="setSandboxTone('1')" id="sb-t-1" class="sb-tone-btn border-2 border-slate-200 hover:border-orange-400 p-3 rounded-xl font-bold flex flex-col items-center bg-white transition-all">
+                                    <span class="text-xl">¯</span>
+                                    <span class="text-xs text-slate-500">第一聲</span>
+                                </button>
+                                <button onclick="setSandboxTone('2')" id="sb-t-2" class="sb-tone-btn border-2 border-slate-200 hover:border-orange-400 p-3 rounded-xl font-bold flex flex-col items-center bg-white transition-all">
+                                    <span class="text-xl">´</span>
+                                    <span class="text-xs text-slate-500">第二聲</span>
+                                </button>
+                                <button onclick="setSandboxTone('3')" id="sb-t-3" class="sb-tone-btn border-2 border-slate-200 hover:border-orange-400 p-3 rounded-xl font-bold flex flex-col items-center bg-white transition-all">
+                                    <span class="text-xl">ˇ</span>
+                                    <span class="text-xs text-slate-500">第三聲</span>
+                                </button>
+                                <button onclick="setSandboxTone('4')" id="sb-t-4" class="sb-tone-btn border-2 border-slate-200 hover:border-orange-400 p-3 rounded-xl font-bold flex flex-col items-center bg-white transition-all">
+                                    <span class="text-xl">`</span>
+                                    <span class="text-xs text-slate-500">第四聲</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Spelling Boat Visualization -->
+                    <div class="lg:col-span-5 flex flex-col items-center justify-center bg-sky-50 border-4 border-sky-200 rounded-3xl p-6 min-h-[400px] relative overflow-hidden">
+                        <!-- Tiny decorative wave design -->
+                        <div class="absolute bottom-0 left-0 right-0 h-12 bg-sky-200/50 flex items-center justify-around">
+                            <span class="text-sky-300 text-3xl">🌊</span>
+                            <span class="text-sky-300 text-3xl">🌊</span>
+                            <span class="text-sky-300 text-3xl">🌊</span>
+                        </div>
+
+                        <div class="text-center z-10">
+                            <!-- Spell Boat Box -->
+                            <div class="relative w-64 h-48 bg-white border-4 border-blue-400 rounded-2xl shadow-xl flex flex-col items-center justify-center p-4">
+                                <div class="absolute -top-6 bg-blue-500 text-white font-extrabold text-xs px-4 py-1 rounded-full shadow">拼音碰碰船</div>
+                                
+                                <div class="flex items-end justify-center gap-2 mt-4">
+                                    <!-- Initial -->
+                                    <div class="flex flex-col items-center">
+                                        <div class="text-slate-400 text-[10px] font-bold uppercase">聲母</div>
+                                        <div id="sb-display-initial" class="text-4xl font-extrabold text-blue-600 w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center border-2 border-blue-200">?</div>
+                                    </div>
+                                    <div class="text-3xl text-slate-300 font-black mb-3">+</div>
+                                    <!-- Final -->
+                                    <div class="flex flex-col items-center">
+                                        <div class="text-slate-400 text-[10px] font-bold uppercase">韻母</div>
+                                        <div id="sb-display-final" class="text-4xl font-extrabold text-green-600 w-16 h-16 bg-green-50 rounded-xl flex items-center justify-center border-2 border-green-200">?</div>
+                                    </div>
+                                    <div class="text-3xl text-slate-300 font-black mb-3">+</div>
+                                    <!-- Tone -->
+                                    <div class="flex flex-col items-center">
+                                        <div class="text-slate-400 text-[10px] font-bold uppercase">聲調</div>
+                                        <div id="sb-display-tone" class="text-4xl font-extrabold text-orange-600 w-12 h-16 bg-orange-50 rounded-xl flex items-center justify-center border-2 border-orange-200">?</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 text-xs font-bold text-slate-500" id="sb-combined-syllable">等待組合拼讀...</div>
+                            </div>
+
+                            <!-- Speak Trigger -->
+                            <button onclick="triggerSandboxSpelling()" class="mt-8 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-lg font-black px-8 py-4 rounded-2xl shadow-lg transition-transform transform active:scale-95 flex items-center gap-3 mx-auto">
+                                <i class="fa-solid fa-volume-high text-xl"></i>
+                                <span>立即神奇拼讀！</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- -->
+        <section id="games-tab" class="tab-content hidden">
+            <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-green-300">
+                <div class="flex items-center justify-between border-b-2 border-green-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🎮</span>
+                        <div>
+                            <h2 class="text-2xl font-black text-green-800">樂園遊戲區 (Games Arcade)</h2>
+                            <p class="text-xs text-slate-500 font-medium">挑戰拼音小遊戲，獲得高分數，成為普通話拼音達人！</p>
+                        </div>
+                    </div>
+                    <div class="text-green-600 bg-green-50 border border-green-200 font-extrabold px-4 py-1 rounded-full flex items-center gap-2">
+                        <span>🏆 當前得分:</span>
+                        <span id="game-score-display" class="text-xl">0</span>
+                    </div>
+                </div>
+
+                <!-- Game Selector -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="game-selector-container">
+                    <!-- Game 1 -->
+                    <div class="bg-red-50 hover:bg-red-100/60 border-4 border-red-200 rounded-2xl p-6 text-center shadow-sm relative overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div class="text-5xl mb-4">🚗</div>
+                            <h3 class="text-lg font-extrabold text-red-800">聲調碰碰車</h3>
+                            <p class="text-xs text-slate-500 mt-2">聽語音發音，點擊正確的聲調氣球。考考你的耳朵敏銳度！</p>
+                        </div>
+                        <button onclick="startGame('tone')" class="mt-6 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-xl text-sm shadow transition-all">
+                            開始挑戰
+                        </button>
+                    </div>
+
+                    <!-- Game 2 -->
+                    <div class="bg-blue-50 hover:bg-blue-100/60 border-4 border-blue-200 rounded-2xl p-6 text-center shadow-sm relative overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div class="text-5xl mb-4">🎠</div>
+                            <h3 class="text-lg font-extrabold text-blue-800">聲母旋轉木馬</h3>
+                            <p class="text-xs text-slate-500 mt-2">根據提示的普通話發音，找出正確的聲母字母。</p>
+                        </div>
+                        <button onclick="startGame('initial')" class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-xl text-sm shadow transition-all">
+                            開始挑戰
+                        </button>
+                    </div>
+
+                    <!-- Game 3 -->
+                    <div class="bg-purple-50 hover:bg-purple-100/60 border-4 border-purple-200 rounded-2xl p-6 text-center shadow-sm relative overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div class="text-5xl mb-4">🎢</div>
+                            <h3 class="text-lg font-extrabold text-purple-800">誰是韻母過山車</h3>
+                            <p class="text-xs text-slate-500 mt-2">聽音節，挑出該音節中包含的正確單/複韻母！</p>
+                        </div>
+                        <button onclick="startGame('final')" class="mt-6 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-xl text-sm shadow transition-all">
+                            開始挑戰
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Game Container Panel (Hidden by default) -->
+                <div id="game-arena" class="hidden bg-slate-50 rounded-2xl border-2 border-slate-200 p-6 md:p-8 relative min-h-[350px] flex flex-col justify-between">
+                    <!-- Top stats bar -->
+                    <div class="flex items-center justify-between mb-6">
+                        <span id="game-title" class="font-extrabold text-slate-700 bg-white border border-slate-200 py-1.5 px-4 rounded-full shadow-sm text-sm">遊戲加載中...</span>
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm font-bold text-slate-500">題目: <span id="game-question-num" class="text-slate-800">1</span>/5</span>
+                            <span class="text-sm font-bold text-slate-500">連續答對: <span id="game-streak-num" class="text-green-600">0</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Core Question Stage -->
+                    <div class="my-6 text-center flex flex-col items-center">
+                        <h4 class="text-lg font-bold text-slate-600 mb-4" id="game-instruction">請按喇叭，仔細聽聽它的發音：</h4>
+                        
+                        <!-- Speak Question trigger button -->
+                        <button id="btn-game-listen" class="w-24 h-24 bg-yellow-400 hover:bg-yellow-500 rounded-full flex items-center justify-center text-white text-4xl shadow-lg border-4 border-white transition-transform active:scale-90 bouncy">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                        <p class="text-xs text-slate-400 mt-3">(點擊黃色喇叭重複聽取聲音)</p>
+                    </div>
+
+                    <!-- Dynamic Answer Option Boxes -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6" id="game-options-container">
+                        <!-- Options injected dynamically by JS -->
+                    </div>
+
+                    <!-- Footer controls -->
+                    <div class="flex justify-between items-center border-t border-slate-200 pt-6 mt-6">
+                        <button onclick="quitGame()" class="text-slate-500 hover:text-slate-700 font-bold text-sm">
+                            <i class="fa-solid fa-door-open mr-1"></i> 返回樂園大廳
+                        </button>
+                        <span class="text-xs font-bold text-slate-400">Pinyin Fantasy Land Arcade 2026</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- -->
+        <section id="challenge-tab" class="tab-content hidden">
+            <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-purple-300">
+                <div class="flex items-center justify-between border-b-2 border-purple-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🏆</span>
+                        <div>
+                            <h2 class="text-2xl font-black text-purple-800">樂園大挑戰 (Grand Challenge)</h2>
+                            <p class="text-xs text-slate-500 font-medium">綜合考察聲母、韻母、聲調與兒化，成功通關獲頒拼音勇士特許證書！</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intro Card -->
+                <div id="challenge-intro" class="text-center py-8">
+                    <div class="text-6xl mb-4 bouncy">🎖️</div>
+                    <h3 class="text-2xl font-black text-indigo-900">拼音小學士終極考驗</h3>
+                    <p class="text-slate-600 max-w-lg mx-auto text-sm mt-2 leading-relaxed">
+                        本大挑戰共有 5 道綜合性題目，範圍包含聲母配對、複韻母辨識、聲調分辨以及兒化音聽寫。你準備好接受挑戰了嗎？
+                    </p>
+                    <div class="mt-6">
+                        <input type="text" id="challenger-name" placeholder="請輸入你的姓名 (製作證書用)" class="px-5 py-3 border-2 border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 w-64 text-center font-bold text-base mb-4">
+                        <br>
+                        <button onclick="startGrandChallenge()" class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-extrabold px-8 py-3.5 rounded-xl shadow-lg transition-all">
+                            立即啟動挑戰！
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Challenge Playing Stage -->
+                <div id="challenge-arena" class="hidden min-h-[350px] flex flex-col justify-between bg-slate-50 p-6 rounded-2xl border-2 border-slate-100">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
+                        <span class="font-extrabold text-purple-700 bg-purple-50 px-4 py-1.5 rounded-full text-xs border border-purple-200">🏆 樂園終極考驗</span>
+                        <span class="font-bold text-slate-500 text-sm">進度: <span id="challenge-progress-num">1</span>/5</span>
+                    </div>
+
+                    <div class="text-center my-6 flex flex-col items-center">
+                        <p class="font-black text-slate-700 text-lg mb-4" id="challenge-text-prompt">請點擊金牌，仔細聆聽發音：</p>
+                        <button id="btn-challenge-listen" class="w-24 h-24 bg-purple-500 hover:bg-purple-600 rounded-full flex items-center justify-center text-white text-4xl shadow-xl border-4 border-white active:scale-95 transition-transform bouncy">
+                            <i class="fa-solid fa-medal"></i>
+                        </button>
+                    </div>
+
+                    <!-- Challenge options -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="challenge-options-container">
+                        <!-- Injected -->
+                    </div>
+
+                    <div class="text-center pt-4 border-t border-slate-200 mt-6">
+                        <button onclick="quitChallenge()" class="text-xs text-slate-400 hover:text-slate-600 font-bold">放棄挑戰</button>
+                    </div>
+                </div>
+
+                <!-- Challenge Completion & Certificate Box -->
+                <div id="challenge-complete-panel" class="hidden">
+                    <div class="bg-gradient-to-br from-yellow-50 to-amber-100 border-8 border-double border-yellow-500 rounded-3xl p-6 md:p-12 text-center max-w-2xl mx-auto shadow-2xl relative">
+                        <div class="absolute top-4 left-4 text-3xl">🎉</div>
+                        <div class="absolute top-4 right-4 text-3xl">🎉</div>
+                        
+                        <h3 class="text-3xl font-black text-amber-800 tracking-wider">拼音大師特許證書</h3>
+                        <p class="text-xs text-amber-600 font-bold uppercase mt-1 tracking-widest">Certificate of Pinyin Master</p>
+                        
+                        <div class="my-8 border-y-2 border-dashed border-amber-400 py-6">
+                            <p class="text-slate-600 text-sm">玆證明優秀的小朋友：</p>
+                            <h4 id="cert-kid-name" class="text-3xl font-black text-slate-800 my-4 underline decoration-amber-500 underline-offset-8">神秘小勇士</h4>
+                            <p class="text-slate-600 text-sm leading-relaxed px-4">
+                                在「拼音奇幻樂園」的終極大考驗中表現超凡，順利通過聲母、韻母、聲調及兒化音的全部考核，特頒此證，以資鼓勵！
+                            </p>
+                        </div>
+
+                        <div class="flex justify-between items-center text-left text-xs text-amber-800 font-bold">
+                            <div>
+                                <p>樂園考官：普通話精靈</p>
+                                <p>日期：2026年6月19日</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl">🥇</div>
+                                <span class="text-[10px] tracking-tighter">樂園總部認證印章</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-8 flex justify-center gap-4">
+                            <button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 py-2.5 rounded-xl shadow text-sm transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-print"></i> 列印保存
+                            </button>
+                            <button onclick="switchTab('welcome')" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl shadow text-sm transition-all">
+                                回到大廳
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CORE SYSTEM JAVASCRIPT -->
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSfx(type) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    // Ascending cheerful chime
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'wrong') {
+                    // Dissatisfied buzz
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+                    osc.frequency.setValueAtTime(147, audioCtx.currentTime + 0.1); // D3
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                } else if (type === 'click') {
+                    // Subtle light bubble click
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                }
+            } catch (err) {
+                console.log("Audio effects not supported or deferred:", err);
+            }
+        }
+
+        function speakChinese(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel ongoing speaches
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN'; // Set voice explicitly to standard Mandarin Chinese
+                utterance.rate = 0.85; // Slightly slower, highly friendly for Pinyin learners
+                utterance.pitch = 1.15; // Bright tone
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.error("Speech Synthesis API is not supported in this browser.");
+            }
+        }
+
+        const PINYIN_DATA = {
+            shengdiao: [
+                { pinyin: '¯', name: '第一聲（陰平）', read: '媽', example: '媽 mā (一聲高高平又平)', tip: '發音高而平，像拉長的「啊——」。' },
+                { pinyin: '´', name: '第二聲（陽平）', read: '麻', example: '麻 má (二聲就像上山坡)', tip: '聲音往上揚，像在驚訝地問：「啊？」' },
+                { pinyin: 'ˇ', name: '第三聲（上聲）', read: '馬', example: '馬 mǎ (三聲下坡又上坡)', tip: '聲音先降下去，再揚起來，拐個小彎。' },
+                { pinyin: '`', name: '第四聲（去聲）', read: '罵', example: '罵 mà (四聲就像下山坡)', tip: '短促有力地往下扔，像大聲答應：「啊！」' }
+            ],
+            shengmu: [
+                { pinyin: 'b', read: '玻', tip: '雙唇緊閉，然後突然打開，氣流衝出口腔。' },
+                { pinyin: 'p', read: '坡', tip: '跟發 b 相似，但要送氣，像吹滅小蠟燭。' },
+                { pinyin: 'm', read: '摸', tip: '雙唇緊閉，讓氣流從鼻子裡出來。鼻音寶寶。' },
+                { pinyin: 'f', read: '敷喔', tip: '（首聲雙音合讀，形成完美一聲的 Fo 讀音）' },
+                { pinyin: 'd', read: '嘚', tip: '舌尖抵住上齒齦，然後突然彈開。' },
+                { pinyin: 't', read: '忒', tip: '與 d 相似，但是要送氣，像吐出一口氣。' },
+                { pinyin: 'n', read: '呢', tip: '舌尖頂住上牙齦，氣流進鼻子。廣東話鼻音特別注意！' },
+                { pinyin: 'l', read: '勒', tip: '舌尖頂住上牙齦，氣流從舌頭兩側流出。廣東話特別注意！' },
+                { pinyin: 'g', read: '哥', tip: '舌根抵住軟齶，然後突然打開。' },
+                { pinyin: 'k', read: '科', tip: '與 g 相似，但是要送氣，像咳嗽吐氣的感覺。' },
+                { pinyin: 'h', read: '喝', tip: '舌根靠近軟齶，讓氣流從狹縫中摩擦發聲。' },
+                { pinyin: 'j', read: '雞', tip: '舌面前部抵住硬齶前部，再輕輕放開。' },
+                { pinyin: 'q', read: '七', tip: '與 j 相似，但是送氣十分強烈。' },
+                { pinyin: 'x', read: '西', tip: '舌面靠近硬齶前部，留出窄縫摩擦發音。' },
+                { pinyin: 'zh', read: '知', tip: '翹舌音！舌尖往上翹，抵住硬齶前部。香港小朋友加油！' },
+                { pinyin: 'ch', read: '吃', tip: '翹舌音！跟 zh 相似，但要用力送氣。' },
+                { pinyin: 'sh', read: '詩', tip: '翹舌音！舌尖上翹靠近硬齶前部，留出縫隙吹氣。' },
+                { pinyin: 'r', read: '日', tip: '翹舌音！發 sh 時將聲帶震動，發出微弱的顫音。' },
+                { pinyin: 'z', read: '姿', tip: '平舌音。舌尖抵住上齒背，輕輕放開。' },
+                { pinyin: 'c', read: '雌', tip: '平舌音。與 z 相似，但送氣極強。' },
+                { pinyin: 's', read: '思', tip: '平舌音。舌尖靠近下齒背，留出縫隙吹氣。' },
+                { pinyin: 'y', read: '衣', tip: '大 Y 與單韻母 i 的發音相同。' },
+                { pinyin: 'w', read: '烏', tip: '大 W 與單韻母 u 的發音相同。' }
+            ],
+            danyunmu: [
+                { pinyin: 'a', read: '阿', tip: '張大嘴巴 a a a。發音時嘴巴張得大大的。' },
+                { pinyin: 'o', read: '喔', tip: '圓圓嘴巴 o o o。嘴唇縮圓，氣流呼出。' },
+                { pinyin: 'e', read: '婀', tip: '扁扁嘴巴 e e e。嘴角兩邊扁扁往後拉。' },
+                { pinyin: 'i', read: '衣', tip: '牙齒對齊 i i i。嘴巴扁扁，露出牙齒。' },
+                { pinyin: 'u', read: '烏', tip: '嘴巴突突 u u u。嘴唇縮成一個圓圓的小洞。' },
+                { pinyin: 'ü', read: '淤', tip: '吹哨嘴巴 ü ü ü。發 i 的音，嘴唇圓起，像小魚吹泡.' }
+            ],
+            fuyunmu: [
+                { pinyin: 'ai', read: '哀', tip: '先發 a，然後快速滑向 i，音從強變弱。' },
+                { pinyin: 'ei', read: '诶', tip: '先發 e，然後快速滑向 i。像拔河時出力的聲音。' },
+                { pinyin: 'ui', read: '威', tip: '先發 u，然後快速滑向 i。' },
+                { pinyin: 'ao', read: '凹', tip: '先發 a，然後嘴巴逐漸收圓，滑向 o。' },
+                { pinyin: 'ou', read: '歐', tip: '先發 o，然後嘴唇縮得更圓更小，滑向 u。' },
+                { pinyin: 'iu', read: '優', tip: '先發 i，然後滑向 u。' },
+                { pinyin: 'ie', read: '耶', tip: '先發 i，然後舌位下降滑向 e。' },
+                { pinyin: 'üe', read: '約', tip: '先發 ü，然後滑向 e。' },
+                { pinyin: 'er', read: '兒', tip: '發 e 的同時，舌頭往上捲起。這是一個很特別的韻母！' }
+            ],
+            erhua: [
+                { pinyin: '花兒 huār', read: '花儿', tip: '捲起舌頭，把「花」和捲舌音連在一起讀：huār。' },
+                { pinyin: '玩兒 wánr', read: '玩儿', tip: '讀完「玩」，迅速把舌頭往上捲。' },
+                { pinyin: '畫兒 huàr', read: '畫兒', tip: '用作名詞，「一幅畫兒」。舌頭記得捲起來。' },
+                { pinyin: '貓兒 māor', read: '貓兒', tip: '像可愛的小貓一樣，帶著捲舌聲 māor。' }
+            ]
+        };
+
+        const PINYIN_CHAR_MAP = {
+            // b series
+            'ba1': '巴', 'ba2': '拔', 'ba3': '把', 'ba4': '爸',
+            'bo1': '波', 'bo2': '脖', 'bo3': '跛', 'bo4': '播',
+            'bi1': '逼', 'bi2': '鼻', 'bi3': '比', 'bi4': '必',
+            'bu1': '逋', 'bu2': '捕', 'bu3': '補', 'bu4': '步',
+            'bai1': '掰', 'bai2': '白', 'bai3': '百', 'bai4': '敗',
+            'bei1': '杯', 'bei2': '北', 'bei3': '北', 'bei4': '貝',
+            'bao1': '包', 'bao2': '雹', 'bao3': '飽', 'bao4': '報',
+            // p series
+            'pa1': '趴', 'pa2': '爬', 'pa3': '怕', 'pa4': '怕',
+            'po1': '坡', 'po2': '婆', 'po3': '破', 'po4': '破',
+            'pi1': '批', 'pi2': '皮', 'pi3': '匹', 'pi4': '屁',
+            'pu1': '鋪', 'pu2': '仆', 'pu3': '普', 'pu4': '瀑',
+            'pai1': '拍', 'pai2': '排', 'pai3': '派', 'pai4': '派',
+            'pei1': '胚', 'pei2': '陪', 'pei3': '配', 'pei4': '佩',
+            'pao1': '拋', 'pao2': '刨', 'pao3': '跑', 'pao4': '泡',
+            // m series
+            'ma1': '媽', 'ma2': '麻', 'ma3': '馬', 'ma4': '罵',
+            'mo1': '摸', 'mo2': '魔', 'mo3': '抹', 'mo4': '末',
+            'mi1': '咪', 'mi2': '迷', 'mi3': '米', 'mi4': '密',
+            'mu1': '姆', 'mu2': '模', 'mu3': '母', 'mu4': '木',
+            'mai1': '埋', 'mai2': '霾', 'mai3': '買', 'mai4': '賣',
+            'mei1': '沒', 'mei2': '煤', 'mei3': '美', 'mei4': '妹',
+            'mao1': '貓', 'mao2': '毛', 'mao3': '卯', 'mao4': '帽',
+            'mou1': '謀', 'mou2': '眸', 'mou3': '某', 'mou4': '茂',
+            // f series
+            'fa1': '發', 'fa2': '罰', 'fa3': '法', 'fa4': '法',
+            'fo1': '佛', 'fo2': '佛', 'fo3': '佛', 'fo4': '佛',
+            'fu1': '膚', 'fu2': '扶', 'fu3': '府', 'fu4': '富',
+            'fei1': '飛', 'fei2': '肥', 'fei3': '匪', 'fei4': '費',
+            'fou1': '否', 'fou2': '否', 'fou3': '否', 'fou4': '否',
+            // d series
+            'da1': '搭', 'da2': '達', 'da3': '打', 'da4': '大',
+            'de1': '得', 'de2': '德', 'de3': '底', 'de4': '地',
+            'di1': '低', 'di2': '敵', 'di3': '底', 'di4': '地',
+            'du1': '都', 'du2': '毒', 'du3': '賭', 'du4': '度',
+            'dai1': '呆', 'dai2': '逮', 'dai3': '歹', 'dai4': '帶',
+            'dei1': '得', 'dei2': '得', 'dei3': '得', 'dei4': '得',
+            'dui1': '堆', 'dui2': '對', 'dui3': '對', 'dui4': '隊',
+            'dao1': '刀', 'dao2': '導', 'dao3': '島', 'dao4': '到',
+            'dou1': '兜', 'dou2': '抖', 'dou3': '抖', 'dou4': '豆',
+            // t series
+            'ta1': '他', 'ta2': '塔', 'ta3': '塔', 'ta4': '踏',
+            'te1': '特', 'te2': '特', 'te3': '特', 'te4': '特',
+            'ti1': '踢', 'ti2': '提', 'ti3': '體', 'ti4': '替',
+            'tu1': '突', 'tu2': '圖', 'tu3': '土', 'tu4': '兔',
+            'tai1': '胎', 'tai2': '台', 'tai3': '抬', 'tai4': '太',
+            'tui1': '推', 'tui2': '頹', 'tui3': '腿', 'tui4': '退',
+            'tao1': '濤', 'tao2': '逃', 'tao3': '討', 'tao4': '套',
+            'tou1': '偷', 'tou2': '投', 'tou3': '頭', 'tou4': '透',
+            // n series
+            'na1': '那', 'na2': '拿', 'na3': '哪', 'na4': '那',
+            'ne1': '呢', 'ne2': '呢', 'ne3': '呢', 'ne4': '呢',
+            'ni1': '妮', 'ni2': '泥', 'ni3': '你', 'ni4': '逆',
+            'nu1': '奴', 'nu2': '奴', 'nu3': '努', 'nu4': '怒',
+            'nü1': '女', 'nü2': '女', 'nü3': '女', 'nü4': '女',
+            'nai1': '乃', 'nai2': '奈', 'nai3': '奶', 'nai4': '耐',
+            'nei1': '內', 'nei2': '內', 'nei3': '內', 'nei4': '內',
+            'nao1': '鬧', 'nao2': '撓', 'nao3': '腦', 'nao4': '鬧',
+            // l series
+            'la1': '拉', 'la2': '藍', 'la3': '喇', 'la4': '辣',
+            'le1': '勒', 'le2': '樂', 'le3': '了', 'le4': '樂',
+            'li1': '哩', 'li2': '離', 'li3': '里', 'li4': '麗',
+            'lu1': '嚕', 'lu2': '爐', 'lu3': '魯', 'lu4': '路',
+            'lü1': '驢', 'lü2': '驢', 'lü3': '旅', 'lü4': '綠',
+            'lai1': '來', 'lai2': '來', 'lai3': '賴', 'lai4': '賴',
+            'lei1': '勒', 'lei2': '雷', 'lei3': '累', 'lei4': '淚',
+            'lao1': '撈', 'lao2': '勞', 'lao3': '老', 'lao4': '烙',
+            'lou1': '摟', 'lou2': '樓', 'lou3': '摟', 'lou4': '漏',
+            // g series
+            'ga1': '咖', 'ga2': '嘎', 'ga3': '尕', 'ga4': '尬',
+            'ge1': '哥', 'ge2': '閣', 'ge3': '合', 'ge4': '個',
+            'gu1': '姑', 'gu2': '古', 'gu3': '古', 'gu4': '故',
+            'gai1': '該', 'gai2': '改', 'gai3': '改', 'gai4': '蓋',
+            'gei1': '給', 'gei2': '給', 'gei3': '給', 'gei4': '給',
+            'gui1': '歸', 'gui2': '軌', 'gui3': '軌', 'gui4': '貴',
+            'gao1': '高', 'gao2': '糕', 'gao3': '搞', 'gao4': '告',
+            'gou1': '溝', 'gou2': '狗', 'gou3': '狗', 'gou4': '夠',
+            // k series
+            'ka1': '咖', 'ka2': '卡', 'ka3': '卡', 'ka4': '卡',
+            'ke1': '科', 'ke2': '咳', 'ke3': '可', 'ke4': '客',
+            'ku1': '哭', 'ku2': '庫', 'ku3': '苦', 'ku4': '庫',
+            'kai1': '開', 'kai2': '凱', 'kai3': '凱', 'kai4': '慨',
+            'kui1': '盔', 'kui2': '奎', 'kui3': '傀', 'kui4': '愧',
+            'kao1': '尻', 'kao2': '考', 'kao3': '考', 'kao4': '靠',
+            'kou1': '摳', 'kou2': '口', 'kou3': '口', 'kou4': '扣',
+            // h series
+            'ha1': '哈', 'ha2': '蛤', 'ha3': '哈', 'ha4': '哈',
+            'he1': '喝', 'he2': '河', 'he3': '合', 'he4': '賀',
+            'hu1': '呼', 'hu2': '湖', 'hu3': '虎', 'hu4': '護',
+            'hai1': '嗨', 'hai2': '孩', 'hai3': '海', 'hai4': '害',
+            'hui1': '輝', 'hui2': '回', 'hui3': '毀', 'hui4': '會',
+            'hao1': '篙', 'hao2': '豪', 'hao3': '好', 'hao4': '號',
+            'hou1': '齁', 'hou2': '猴', 'hou3': '吼', 'hou4': '後',
+            // j series
+            'ji1': '雞', 'ji2': '極', 'ji3': '己', 'ji4': '記',
+            'ju1': '居', 'ju2': '局', 'ju3': '舉', 'ju4': '劇',
+            'jie1': '街', 'jie2': '節', 'jie3': '姐', 'jie4': '界',
+            'jue1': '約', 'jue2': '決', 'jue3': '覺', 'jue4': '絕',
+            'jiu1': '究', 'jiu2': '九', 'jiu3': '九', 'jiu4': '救',
+            // q series
+            'qi1': '七', 'qi2': '騎', 'qi3': '起', 'qi4': '氣',
+            'qu1': '區', 'qu2': '渠', 'qu3': '娶', 'qu4': '去',
+            'qie1': '切', 'qie2': '茄', 'qie3': '且', 'qie4': '妾',
+            'que1': '缺', 'que2': '瘸', 'que3': '卻', 'que4': '卻',
+            'qiu1': '秋', 'qiu2': '球', 'qiu3': '求', 'qiu4': '去',
+            // x series
+            'xi1': '西', 'xi2': '席', 'xi3': '喜', 'xi4': '戲',
+            'xu1': '需', 'xu2': '徐', 'xu3': '許', 'xu4': '續',
+            'xie1': '些', 'xie2': '鞋', 'xie3': '寫', 'xie4': '謝',
+            'xue1': '靴', 'xue2': '學', 'xue3': '雪', 'xue4': '穴',
+            'xiu1': '修', 'xiu2': '袖', 'xiu3': '朽', 'xiu4': '秀',
+            // zh series
+            'zha1': '扎', 'zha2': '閘', 'zha3': '眨', 'zha4': '榨',
+            'zhe1': '遮', 'zhe2': '折', 'zhe3': '者', 'zhe4': '這',
+            'zhi1': '知', 'zhi2': '直', 'zhi3': '紙', 'zhi4': '智',
+            'zhu1': '豬', 'zhu2': '竹', 'zhu3': '主', 'zhu4': '助',
+            'zhai1': '摘', 'zhai2': '宅', 'zhai3': '窄', 'zhai4': '債',
+            'zhei1': '這', 'zhei2': '這', 'zhei3': '這', 'zhei4': '這',
+            'zhui1': '追', 'zhui2': '錐', 'zhui3': '贅', 'zhui4': '墜',
+            'zhao1': '招', 'zhao2': '找', 'zhao3': '找', 'zhao4': '照',
+            'zhou1': '周', 'zhou2': '軸', 'zhou3': '帚', 'zhou4': '咒',
+            // ch series
+            'cha1': '插', 'cha2': '茶', 'cha3': '查', 'cha4': '差',
+            'che1': '車', 'che2': '扯', 'che3': '扯', 'che4': '徹',
+            'chi1': '吃', 'chi2': '遲', 'chi3': '齒', 'chi4': '赤',
+            'chu1': '出', 'chu2': '除', 'chu3': '楚', 'chu4': '處',
+            'chai1': '拆', 'chai2': '柴', 'chai3': '豺', 'chai4': '瘥',
+            'chui1': '吹', 'chui2': '錘', 'chui3': '吹', 'chui4': '諉',
+            'chao1': '抄', 'chao2': '潮', 'chao3': '吵', 'chao4': '超',
+            'chou1': '抽', 'chou2': '仇', 'chou3': '丑', 'chou4': '臭',
+            // sh series
+            'sha1': '沙', 'sha2': '啥', 'sha3': '傻', 'sha4': '殺',
+            'she1': '奢', 'she2': '蛇', 'she3': '捨', 'she4': '社',
+            'shi1': '詩', 'shi2': '十', 'shi3': '使', 'shi4': '是',
+            'shu1': '書', 'shu2': '熟', 'shu3': '屬', 'shu4': '樹',
+            'shai1': '篩', 'shai2': '曬', 'shai3': '曬', 'shai4': '曬',
+            'shei1': '誰', 'shei2': '誰', 'shei3': '誰', 'shei4': '誰',
+            'shui1': '水', 'shui2': '誰', 'shui3': '水', 'shui4': '稅',
+            'shao1': '燒', 'shao2': '勺', 'shao3': '少', 'shao4': '少',
+            'shou1': '收', 'shou2': '熟', 'shou3': '手', 'shou4': '售',
+            // r series
+            're1': '惹', 're2': '熱', 're3': '惹', 're4': '熱',
+            'ri1': '日', 'ri2': '日', 'ri3': '日', 'ri4': '日',
+            'ru1': '如', 'ru2': '如', 'ru3': '乳', 'ru4': '入',
+            'rui1': '瑞', 'rui2': '瑞', 'rui3': '蕊', 'rui4': '瑞',
+            'rao1': '饒', 'rao2': '饒', 'rao3': '擾', 'rao4': '繞',
+            'rou1': '肉', 'rou2': '柔', 'rou3': '肉', 'rou4': '肉',
+            // z series
+            'za1': '扎', 'za2': '雜', 'za3': '砸', 'za4': '砸',
+            'ze1': '則', 'ze2': '責', 'ze3': '仄', 'ze4': '仄',
+            'zi1': '姿', 'zi2': '子', 'zi3': '子', 'zi4': '字',
+            'zu1': '租', 'zu2': '足', 'zu3': '阻', 'zu4': '族',
+            'zai1': '災', 'zai2': '仔', 'zai3': '宰', 'zai4': '在',
+            'zei1': '賊', 'zei2': '賊', 'zei3': '賊', 'zei4': '賊',
+            'zui1': '嘴', 'zui2': '嘴', 'zui3': '嘴', 'zui4': '最',
+            'zao1': '糟', 'zao2': '鑿', 'zao3': '早', 'zao4': '造',
+            'zou1': '鄒', 'zou2': '走', 'zou3': '走', 'zou4': '奏',
+            // c series
+            'ca1': '擦', 'ca2': '礤', 'ca3': '礤', 'ca4': '礤',
+            'ce1': '策', 'ce2': '冊', 'ce3': '廁', 'ce4': '測',
+            'ci1': '雌', 'ci2': '詞', 'ci3': '此', 'ci4': '次',
+            'cu1': '粗', 'cu2': '徂', 'cu3': '醋', 'cu4': '醋',
+            'cai1': '猜', 'cai2': '才', 'cai3': '彩', 'cai4': '菜',
+            'cui1': '催', 'cui2': '脆', 'cui3': '璀', 'cui4': '脆',
+            'cao1': '操', 'cao2': '曹', 'cao3': '草', 'cao4': '糙',
+            'cou1': '湊', 'cou2': '湊', 'cou3': '湊', 'cou4': '湊',
+            // s series
+            'sa1': '撒', 'sa2': '灑', 'sa3': '灑', 'sa4': '薩',
+            'se1': '瑟', 'se2': '色', 'se3': '塞', 'se4': '色',
+            'si1': '思', 'si2': '絲', 'si3': '死', 'si4': '四',
+            'su1': '蘇', 'su2': '俗', 'su3': '訴', 'su4': '速',
+            'sai1': '塞', 'sai2': '腮', 'sai3': '賽', 'sai4': '賽',
+            'sui1': '雖', 'sui2': '隨', 'sui3': '歲', 'sui4': '碎',
+            'sao1': '騷', 'sao2': '掃', 'sao3': '掃', 'sao4': '嫂',
+            'sou1': '搜', 'sou2': '艘', 'sou3': '抖', 'sou4': '罷',
+            // y series (y combines with finals to form syllables)
+            'ya1': '鴨', 'ya2': '牙', 'ya3': '雅', 'ya4': '亞',
+            'ye1': '耶', 'ye2': '爺', 'ye3': '野', 'ye4': '夜',
+            'yi1': '衣', 'yi2': '移', 'yi3': '以', 'yi4': '意',
+            'yu1': '淤', 'yu2': '魚', 'yu3': '雨', 'yu4': '玉',
+            'yao1': '腰', 'yao2': '搖', 'yao3': '咬', 'yao4': '藥',
+            'you1': '優', 'you2': '油', 'you3': '有', 'you4': '右',
+            // w series
+            'wa1': '蛙', 'wa2': '娃', 'wa3': '瓦', 'wa4': '襪',
+            'wo1': '窩', 'wo2': '我', 'wo3': '我', 'wo4': '臥',
+            'wu1': '烏', 'wu2': '無', 'wu3': '五', 'wu4': '物',
+            'wai1': '歪', 'wai2': '歪', 'wai3': '外', 'wai4': '外',
+            'wei1': '威', 'wei2': '維', 'wei3': '委', 'wei4': '未',
+            // Special single vowel finals mapping to character values directly if no initial
+            'a1': '阿', 'a2': '啊', 'a3': '啊', 'a4': '啊',
+            'o1': '喔', 'o2': '喔', 'o3': '喔', 'o4': '喔',
+            'e1': '婀', 'e2': '額', 'e3': '惡', 'e4': '餓',
+            'i1': '衣', 'i2': '姨', 'i3': '椅', 'i4': '意',
+            'u1': '烏', 'u2': '無', 'u3': '五', 'u4': '誤',
+            'ü1': '淤', 'ü2': '魚', 'ü3': '雨', 'ü4': '玉',
+            'ai1': '哀', 'ai2': '癌', 'ai3': '矮', 'ai4': '愛',
+            'ei1': '誒', 'ei2': '誒', 'ei3': '誒', 'ei4': '誒',
+            'ui1': '威', 'ui2': '回', 'ui3': '水', 'ui4': '稅',
+            'ao1': '凹', 'ao2': '熬', 'ao3': '襖', 'ao4': '傲',
+            'ou1': '歐', 'ou2': '甌', 'ou3': '偶', 'ou4': '歐',
+            'iu1': '優', 'iu2': '由', 'iu3': '有', 'iu4': '右',
+            'ie1': '耶', 'ie2': '椰', 'ie3': '野', 'ie4': '葉',
+            'üe1': '約', 'üe2': '約', 'üe3': '約', 'üe4': '月',
+            'er1': '兒', 'er2': '兒', 'er3': '耳', 'er4': '二'
+        };
+
+        function switchTab(tabId) {
+            playSfx('click');
+            // Hide all
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('block'));
+            
+            // Show current
+            const target = document.getElementById(`${tabId}-tab`);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('block');
+            }
+
+            // Init actions if any
+            if (tabId === 'flashcards') {
+                filterFlashcards('shengdiao'); // Default subtab for flashcards
+            } else if (tabId === 'practice') {
+                initSandbox();
+            } else if (tabId === 'games') {
+                resetArcade();
+            }
+        }
+
+        function filterFlashcards(category) {
+            playSfx('click');
+            
+            // Highlight sub-tab button
+            document.querySelectorAll('.fc-sub-btn').forEach(btn => {
+                btn.className = "fc-sub-btn hover:bg-red-100 text-red-700 px-5 py-2.5 rounded-xl font-bold text-sm transition-all";
+            });
+            const activeBtn = document.getElementById(`btn-fc-${category}`);
+            if (activeBtn) {
+                activeBtn.className = "fc-sub-btn bg-red-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow transition-all";
+            }
+
+            const grid = document.getElementById('flashcard-grid');
+            grid.innerHTML = '';
+
+            const list = PINYIN_DATA[category];
+            if (!list) return;
+
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-white border-4 border-rose-100 hover:border-red-400 p-6 rounded-2xl shadow-sm text-center cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg flex flex-col justify-between items-center h-48";
+                
+                // Clicking triggers reading
+                card.onclick = () => {
+                    playSfx('click');
+                    speakChinese(item.read);
+                };
+
+                let cardContent = '';
+                if (category === 'shengdiao') {
+                    cardContent = `
+                        <div class="text-3xl font-black text-rose-500 bg-rose-50 w-12 h-12 rounded-full flex items-center justify-center border-2 border-rose-200 mb-2">${item.pinyin}</div>
+                        <h4 class="font-black text-slate-700 text-sm">${item.name}</h4>
+                        <p class="text-[10px] text-amber-600 font-extrabold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">${item.example}</p>
+                    `;
+                } else if (category === 'erhua') {
+                    cardContent = `
+                        <div class="text-2xl font-black text-purple-600 mb-2">${item.pinyin}</div>
+                        <div class="text-xs text-slate-500 font-medium leading-tight px-1 text-center">${item.tip}</div>
+                        <div class="text-[10px] text-purple-500 bg-purple-50 px-2.5 py-1 rounded-full font-bold mt-2 border border-purple-100">
+                            <i class="fa-solid fa-volume-high mr-1"></i> 點擊聽發音
+                        </div>
+                    `;
+                } else {
+                    // Initials, Simple and Compound Finals -> display Pinyin directly with NO parenths mapping to retain focus.
+                    cardContent = `
+                        <div class="text-4xl font-extrabold text-slate-800 tracking-wider mb-2">${item.pinyin}</div>
+                        <div class="text-[10px] text-slate-500 font-medium leading-tight px-1">${item.tip}</div>
+                        <div class="text-[10px] text-red-400 bg-rose-50/50 px-2.5 py-1 rounded-full font-bold mt-2 border border-rose-100/40">
+                            <i class="fa-solid fa-volume-high mr-1"></i> 1 聲
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = cardContent;
+                grid.appendChild(card);
+            });
+        }
+
+        // SANDBOX / PRACTICE BOAT COMPONENT STATE
+        let sbSelectedInitial = '';
+        let sbSelectedFinal = '';
+        let sbSelectedTone = '1';
+
+        function initSandbox() {
+            // Initalize Initials
+            const initContainer = document.getElementById('sandbox-initials');
+            initContainer.innerHTML = '';
+            PINYIN_DATA.shengmu.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = "px-3 py-1.5 bg-white border border-slate-200 hover:border-blue-400 rounded-lg font-bold text-sm text-slate-700 hover:bg-blue-50 transition-all";
+                btn.id = `sb-init-${item.pinyin}`;
+                btn.innerText = item.pinyin;
+                btn.onclick = () => selectSandboxInitial(item.pinyin);
+                initContainer.appendChild(btn);
+            });
+
+            // Initalize Simple Finals
+            const simpleFinalContainer = document.getElementById('sandbox-finals-simple');
+            simpleFinalContainer.innerHTML = '<span class="text-xs text-slate-400 font-bold w-full mb-1">單韻母：</span>';
+            PINYIN_DATA.danyunmu.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = "px-3 py-1.5 bg-white border border-slate-200 hover:border-green-400 rounded-lg font-bold text-sm text-slate-700 hover:bg-green-50 transition-all";
+                btn.id = `sb-final-${item.pinyin}`;
+                btn.innerText = item.pinyin;
+                btn.onclick = () => selectSandboxFinal(item.pinyin);
+                simpleFinalContainer.appendChild(btn);
+            });
+
+            // Initalize Compound Finals
+            const compoundFinalContainer = document.getElementById('sandbox-finals-compound');
+            compoundFinalContainer.innerHTML = '<span class="text-xs text-slate-400 font-bold w-full mb-1">複韻母：</span>';
+            PINYIN_DATA.fuyunmu.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = "px-3 py-1.5 bg-white border border-slate-200 hover:border-green-400 rounded-lg font-bold text-sm text-slate-700 hover:bg-green-50 transition-all";
+                btn.id = `sb-final-${item.pinyin}`;
+                btn.innerText = item.pinyin;
+                btn.onclick = () => selectSandboxFinal(item.pinyin);
+                compoundFinalContainer.appendChild(btn);
+            });
+
+            // Set default selections
+            selectSandboxInitial('b');
+            selectSandboxFinal('a');
+            setSandboxTone('1');
+        }
+
+        function selectSandboxInitial(pinyin) {
+            playSfx('click');
+            // Remove previous active classes
+            document.querySelectorAll('#sandbox-initials button').forEach(b => {
+                b.classList.remove('bg-blue-500', 'text-white', 'border-blue-500');
+                b.classList.add('bg-white', 'text-slate-700');
+            });
+            // Set current active
+            const activeBtn = document.getElementById(`sb-init-${pinyin}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white', 'text-slate-700');
+                activeBtn.classList.add('bg-blue-500', 'text-white', 'border-blue-500');
+            }
+            sbSelectedInitial = pinyin;
+            updateSandboxDisplay();
+        }
+
+        function selectSandboxFinal(pinyin) {
+            playSfx('click');
+            // Remove previous active classes
+            document.querySelectorAll('#sandbox-finals-simple button, #sandbox-finals-compound button').forEach(b => {
+                b.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                b.classList.add('bg-white', 'text-slate-700');
+            });
+            // Set current active
+            const activeBtn = document.getElementById(`sb-final-${pinyin}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white', 'text-slate-700');
+                activeBtn.classList.add('bg-green-500', 'text-white', 'border-green-500');
+            }
+            sbSelectedFinal = pinyin;
+            updateSandboxDisplay();
+        }
+
+        function setSandboxTone(toneNum) {
+            playSfx('click');
+            document.querySelectorAll('.sb-tone-btn').forEach(b => {
+                b.classList.remove('bg-orange-500', 'text-white', 'border-orange-500');
+                b.classList.add('bg-white', 'text-slate-700');
+            });
+            const activeBtn = document.getElementById(`sb-t-${toneNum}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white', 'text-slate-700');
+                activeBtn.classList.add('bg-orange-500', 'text-white', 'border-orange-500');
+            }
+            sbSelectedTone = toneNum;
+            updateSandboxDisplay();
+        }
+
+        function updateSandboxDisplay() {
+            document.getElementById('sb-display-initial').innerText = sbSelectedInitial || '?';
+            document.getElementById('sb-display-final').innerText = sbSelectedFinal || '?';
+            
+            let toneSymbol = '¯';
+            if (sbSelectedTone === '2') toneSymbol = '´';
+            if (sbSelectedTone === '3') toneSymbol = 'ˇ';
+            if (sbSelectedTone === '4') toneSymbol = '`';
+            
+            document.getElementById('sb-display-tone').innerText = toneSymbol;
+
+            const combo = (sbSelectedInitial + sbSelectedFinal).toLowerCase();
+            const comboWithTone = combo + sbSelectedTone;
+            const targetChar = PINYIN_CHAR_MAP[comboWithTone];
+
+            if (targetChar) {
+                document.getElementById('sb-combined-syllable').innerHTML = `
+                    <span class="text-sm font-extrabold text-blue-800">${sbSelectedInitial}${sbSelectedFinal} (${toneSymbol})</span> 
+                    <span class="text-xs text-slate-400"> ➔ 對應生字: </span>
+                    <span class="text-lg font-black text-slate-800 bg-amber-100 px-2.5 py-0.5 rounded">${targetChar}</span>
+                `;
+            } else {
+                document.getElementById('sb-combined-syllable').innerHTML = `
+                    <span class="text-xs text-rose-500 font-extrabold">拼音組合「${sbSelectedInitial}${sbSelectedFinal}」在這個聲調中較不常用哦！可以試試別的拼法！</span>
+                `;
+            }
+        }
+
+        function triggerSandboxSpelling() {
+            const combo = (sbSelectedInitial + sbSelectedFinal).toLowerCase();
+            const comboWithTone = combo + sbSelectedTone;
+            const targetChar = PINYIN_CHAR_MAP[comboWithTone];
+
+            if (targetChar) {
+                playSfx('correct');
+                speakChinese(targetChar);
+            } else {
+                // Try pronouncing components or fallback
+                playSfx('wrong');
+                speakChinese(combo);
+            }
+        }
+
+        // ARCADE / MINI GAMES LOGIC
+        let currentGameType = '';
+        let currentQuestionIndex = 0;
+        let gameScore = 0;
+        let streakCount = 0;
+        let currentQuestionData = {};
+
+        function resetArcade() {
+            document.getElementById('game-score-display').innerText = gameScore;
+            document.getElementById('game-selector-container').classList.remove('hidden');
+            document.getElementById('game-arena').classList.add('hidden');
+        }
+
+        function startGame(type) {
+            playSfx('click');
+            currentGameType = type;
+            currentQuestionIndex = 0;
+            streakCount = 0;
+            document.getElementById('game-streak-num').innerText = streakCount;
+            document.getElementById('game-selector-container').classList.add('hidden');
+            document.getElementById('game-arena').classList.remove('hidden');
+
+            loadNextGameQuestion();
+        }
+
+        function loadNextGameQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex > 5) {
+                // Game Finished
+                playSfx('correct');
+                showNotification(`🎉 挑戰完成！你在這款遊戲中表現極佳，獲得了更多拼音知識！`, 'success');
+                quitGame();
+                return;
+            }
+
+            document.getElementById('game-question-num').innerText = currentQuestionIndex;
+            generateQuestionData();
+        }
+
+        function generateQuestionData() {
+            const optionsContainer = document.getElementById('game-options-container');
+            optionsContainer.innerHTML = '';
+
+            const listenBtn = document.getElementById('btn-game-listen');
+
+            if (currentGameType === 'tone') {
+                document.getElementById('game-title').innerText = '🚗 聲調碰碰車';
+                document.getElementById('game-instruction').innerText = '請按黃色喇叭聽讀音，點擊正確的聲調氣球：';
+
+                // Pick random syllable
+                const toneTargets = [
+                    { char: '媽', tone: '1', pinyin: 'mā' },
+                    { char: '麻', tone: '2', pinyin: 'má' },
+                    { char: '馬', tone: '3', pinyin: 'mǎ' },
+                    { char: '罵', tone: '4', pinyin: 'mà' },
+                    { char: '巴', tone: '1', pinyin: 'bā' },
+                    { char: '白', tone: '2', pinyin: 'bái' },
+                    { char: '百', tone: '3', pinyin: 'bǎi' },
+                    { char: '爸', tone: '4', pinyin: 'bà' }
+                ];
+                const target = toneTargets[Math.floor(Math.random() * toneTargets.length)];
+                currentQuestionData = {
+                    audio: target.char,
+                    answer: target.tone
+                };
+
+                listenBtn.onclick = () => speakChinese(currentQuestionData.audio);
+                // Trigger first audio speak automatically with delay
+                setTimeout(() => speakChinese(currentQuestionData.audio), 400);
+
+                // Inject 4 Tones
+                const tonesArr = [
+                    { num: '1', label: '第一聲 ¯' },
+                    { num: '2', label: '第二聲 ´' },
+                    { num: '3', label: '第三聲 ˇ' },
+                    { num: '4', label: '第四聲 `' }
+                ];
+
+                tonesArr.forEach(t => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-white border-4 border-rose-100 hover:border-red-400 p-5 rounded-2xl font-black text-slate-700 text-lg shadow-sm transition-all transform active:scale-95";
+                    btn.innerText = t.label;
+                    btn.onclick = () => checkGameAnswer(t.num);
+                    optionsContainer.appendChild(btn);
+                });
+
+            } else if (currentGameType === 'initial') {
+                document.getElementById('game-title').innerText = 'Carousel 聲母旋轉木馬';
+                document.getElementById('game-instruction').innerText = '仔細聆聽發音，找出正確的聲母：';
+
+                // Choose a random initial
+                const randomInitial = PINYIN_DATA.shengmu[Math.floor(Math.random() * PINYIN_DATA.shengmu.length)];
+                currentQuestionData = {
+                    audio: randomInitial.read,
+                    answer: randomInitial.pinyin
+                };
+
+                listenBtn.onclick = () => speakChinese(currentQuestionData.audio);
+                setTimeout(() => speakChinese(currentQuestionData.audio), 400);
+
+                // Gather 3 wrong options
+                let distractors = PINYIN_DATA.shengmu
+                    .filter(item => item.pinyin !== randomInitial.pinyin)
+                    .map(item => item.pinyin);
+                distractors = shuffleArray(distractors).slice(0, 3);
+                
+                let choices = [randomInitial.pinyin, ...distractors];
+                choices = shuffleArray(choices);
+
+                choices.forEach(ch => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-white border-4 border-sky-100 hover:border-sky-400 py-6 px-4 rounded-2xl font-black text-slate-800 text-3xl shadow-sm transition-all transform active:scale-95";
+                    btn.innerText = ch;
+                    btn.onclick = () => checkGameAnswer(ch);
+                    optionsContainer.appendChild(btn);
+                });
+
+            } else if (currentGameType === 'final') {
+                document.getElementById('game-title').innerText = '🎢 誰是韻母過山車';
+                document.getElementById('game-instruction').innerText = '聽聽下面的音節發音，它是什麼韻母呢？';
+
+                const finalsChoices = [...PINYIN_DATA.danyunmu, ...PINYIN_DATA.fuyunmu];
+                const randomFinal = finalsChoices[Math.floor(Math.random() * finalsChoices.length)];
+                
+                currentQuestionData = {
+                    audio: randomFinal.read,
+                    answer: randomFinal.pinyin
+                };
+
+                listenBtn.onclick = () => speakChinese(currentQuestionData.audio);
+                setTimeout(() => speakChinese(currentQuestionData.audio), 400);
+
+                let distractors = finalsChoices
+                    .filter(item => item.pinyin !== randomFinal.pinyin)
+                    .map(item => item.pinyin);
+                distractors = shuffleArray(distractors).slice(0, 3);
+
+                let choices = [randomFinal.pinyin, ...distractors];
+                choices = shuffleArray(choices);
+
+                choices.forEach(ch => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-white border-4 border-purple-100 hover:border-purple-400 py-6 px-4 rounded-2xl font-black text-slate-800 text-2xl shadow-sm transition-all transform active:scale-95";
+                    btn.innerText = ch;
+                    btn.onclick = () => checkGameAnswer(ch);
+                    optionsContainer.appendChild(btn);
+                });
+            }
+        }
+
+        function checkGameAnswer(chosen) {
+            if (chosen === currentQuestionData.answer) {
+                playSfx('correct');
+                gameScore += 20;
+                streakCount++;
+                document.getElementById('game-score-display').innerText = gameScore;
+                document.getElementById('game-streak-num').innerText = streakCount;
+                showNotification("🎉 太棒了！答對囉！", 'success');
+            } else {
+                playSfx('wrong');
+                streakCount = 0;
+                document.getElementById('game-streak-num').innerText = streakCount;
+                showNotification(`😢 差一點點！正確答案是：【 ${currentQuestionData.answer} 】`, 'error');
+            }
+
+            // Immediately load next
+            loadNextGameQuestion();
+        }
+
+        function quitGame() {
+            playSfx('click');
+            resetArcade();
+        }
+
+        // GRAND CHALLENGE LOGIC
+        let challengeIndex = 0;
+        let challengeCorrectCount = 0;
+        let challengerNameInput = '';
+        let currentChallengeData = {};
+
+        function startGrandChallenge() {
+            const name = document.getElementById('challenger-name').value.trim();
+            if (!name) {
+                playSfx('wrong');
+                showNotification("⚠️ 請輸入小朋友的名字，才可以為你定制證書喔！", 'error');
+                return;
+            }
+            playSfx('click');
+            challengerNameInput = name;
+            challengeIndex = 0;
+            challengeCorrectCount = 0;
+
+            document.getElementById('challenge-intro').classList.add('hidden');
+            document.getElementById('challenge-arena').classList.remove('hidden');
+            document.getElementById('challenge-complete-panel').classList.add('hidden');
+
+            loadChallengeQuestion();
+        }
+
+        function loadChallengeQuestion() {
+            challengeIndex++;
+            if (challengeIndex > 5) {
+                // Done!
+                finishGrandChallenge();
+                return;
+            }
+
+            document.getElementById('challenge-progress-num').innerText = challengeIndex;
+            generateChallengeQuestion();
+        }
+
+        function generateChallengeQuestion() {
+            const optionsContainer = document.getElementById('challenge-options-container');
+            optionsContainer.innerHTML = '';
+            
+            const listenBtn = document.getElementById('btn-challenge-listen');
+
+            // Setup questions spanning Tone, Initials, Finals, and Erhua
+            const pool = [
+                // Q1 Tone
+                { type: 'tone', audio: '馬', prompt: '請問剛才發的「馬」是第幾聲？', answer: '3', choices: ['1', '2', '3', '4'] },
+                // Q2 Initial
+                { type: 'initial', audio: '七', prompt: '請問這個音節「七」的聲母是什麼？', answer: 'q', choices: ['j', 'q', 'x', 'g'] },
+                // Q3 Simple Final
+                { type: 'final', audio: '喔', prompt: '請問「喔」的韻母是什麼？', answer: 'o', choices: ['a', 'o', 'e', 'u'] },
+                // Q4 Compound Final
+                { type: 'final', audio: '歐', prompt: '請仔細聽讀音，它是什麼韻母？', answer: 'ou', choices: ['ao', 'ou', 'iu', 'ie'] },
+                // Q5 Erhua
+                { type: 'erhua', audio: '花儿', prompt: '請問普通話老師讀的「花兒」，寫作什麼拼音？', answer: 'huār', choices: ['huā', 'huār', 'hār', 'huāer'] }
+            ];
+
+            const question = pool[challengeIndex - 1];
+            currentChallengeData = question;
+
+            document.getElementById('challenge-text-prompt').innerText = question.prompt;
+            listenBtn.onclick = () => speakChinese(question.audio);
+            setTimeout(() => speakChinese(question.audio), 500);
+
+            question.choices.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white border-2 border-purple-200 hover:border-purple-500 py-4 px-6 rounded-2xl font-bold text-slate-700 text-lg shadow-sm transition-all transform active:scale-95";
+                btn.innerText = opt;
+                btn.onclick = () => checkChallengeAnswer(opt);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkChallengeAnswer(chosen) {
+            if (chosen === currentChallengeData.answer) {
+                playSfx('correct');
+                challengeCorrectCount++;
+                showNotification("🎯 厲害！挑戰成功！", 'success');
+            } else {
+                playSfx('wrong');
+                showNotification("💡 別灰心，再接再厲！", 'info');
+            }
+
+            setTimeout(() => {
+                loadChallengeQuestion();
+            }, 800);
+        }
+
+        function finishGrandChallenge() {
+            playSfx('correct');
+            document.getElementById('challenge-arena').classList.add('hidden');
+            document.getElementById('challenge-complete-panel').classList.remove('hidden');
+            document.getElementById('cert-kid-name').innerText = challengerNameInput;
+        }
+
+        function quitChallenge() {
+            playSfx('click');
+            document.getElementById('challenge-intro').classList.remove('hidden');
+            document.getElementById('challenge-arena').classList.add('hidden');
+            document.getElementById('challenge-complete-panel').classList.add('hidden');
+        }
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function showNotification(message, type = 'info') {
+            // Remove existing notification banner if present
+            const oldBanner = document.getElementById('app-notification');
+            if (oldBanner) oldBanner.remove();
+
+            const banner = document.createElement('div');
+            banner.id = 'app-notification';
+            banner.className = `fixed top-24 left-1/2 transform -translate-x-1/2 px-6 py-3.5 rounded-2xl font-bold shadow-xl text-center z-50 transition-all duration-300 text-sm border-2 ${
+                type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' :
+                type === 'error' ? 'bg-rose-50 text-rose-800 border-rose-300' :
+                'bg-sky-50 text-sky-800 border-sky-300'
+            }`;
+            banner.innerText = message;
+            document.body.appendChild(banner);
+
+            setTimeout(() => {
+                banner.classList.add('opacity-0');
+                setTimeout(() => banner.remove(), 300);
+            }, 2500);
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            switchTab('welcome');
+        };
+    </script>
+</body>
+</html>
