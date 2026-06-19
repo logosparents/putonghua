@@ -44,7 +44,7 @@
             border-radius: 10px;
         }
 
-        /* */
+        /* Ambient floating pink bubbles styling */
         .bubble-container {
             position: fixed;
             top: 0;
@@ -75,7 +75,7 @@
 </head>
 <body class="min-h-screen text-slate-800 cloud-bg overflow-x-hidden pb-12">
 
-    <!-- -->
+    <!-- Ambient Bubbles -->
     <div class="bubble-container">
         <div class="pink-bubble w-20 h-20 top-24 left-[8%]" style="animation-delay: 0s; animation-duration: 10s;"></div>
         <div class="pink-bubble w-32 h-32 top-[60%] left-[4%]" style="animation-delay: 1.5s; animation-duration: 14s;"></div>
@@ -84,7 +84,7 @@
         <div class="pink-bubble w-24 h-24 top-[15%] left-[50%] -translate-x-1/2" style="animation-delay: 2s; animation-duration: 11s;"></div>
     </div>
 
-    <!-- -->
+    <!-- Top Navigation Header -->
     <header class="relative z-10 bg-gradient-to-r from-red-400 via-orange-400 via-yellow-400 via-green-400 via-blue-400 to-indigo-400 p-1 shadow-lg">
         <div class="bg-white/90 backdrop-blur-sm px-6 py-4 flex flex-col md:flex-row items-center justify-between rounded-b-3xl">
             <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('welcome')">
@@ -115,7 +115,7 @@
     <!-- MAIN INTERACTIVE HUB -->
     <main class="relative z-10 max-w-6xl mx-auto px-4 mt-8" id="app">
 
-        <!-- -->
+        <!-- Welcome Tab -->
         <section id="welcome-tab" class="tab-content block">
             <div class="text-center py-12 px-6 bg-white/80 backdrop-blur-md rounded-3xl border-4 border-dashed border-yellow-400 shadow-2xl relative overflow-hidden">
                 <div class="absolute -top-10 -left-10 text-8xl opacity-15 rotate-12">🎈</div>
@@ -163,7 +163,7 @@
             </div>
         </section>
 
-        <!-- -->
+        <!-- Flashcards Tab -->
         <section id="flashcards-tab" class="tab-content hidden">
             <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-red-300">
                 <div class="flex items-center justify-between border-b-2 border-red-100 pb-4 mb-6">
@@ -179,7 +179,7 @@
                     </div>
                 </div>
 
-                <!-- Flashcard sub-tabs -->
+                <!-- Flashcard sub-tabs (Arranged strictly: Tone -> Initial -> Simple Final -> Compound Final -> Erhua) -->
                 <div class="flex flex-wrap gap-2 mb-6 bg-red-50/50 p-2 rounded-2xl border border-red-100 justify-center">
                     <button onclick="filterFlashcards('shengdiao')" id="btn-fc-shengdiao" class="fc-sub-btn bg-red-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow transition-all">
                         1. 聲調符號
@@ -217,7 +217,7 @@
             </div>
         </section>
 
-        <!-- -->
+        <!-- Practice Sandbox Tab -->
         <section id="practice-tab" class="tab-content hidden">
             <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-blue-300">
                 <div class="flex items-center justify-between border-b-2 border-blue-100 pb-4 mb-6">
@@ -242,7 +242,7 @@
                             </div>
                         </div>
 
-                        <!-- Step 2: Final (Simple or Compound) -->
+                        <!-- Step 2: Final (Simple and Compound) -->
                         <div>
                             <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">步驟 2</span>
                             <h3 class="font-bold text-slate-700 mt-2 mb-3">🎈 選擇韻母 (可選單韻母或複韻母)：</h3>
@@ -327,7 +327,7 @@
             </div>
         </section>
 
-        <!-- -->
+        <!-- Games Arcade Tab -->
         <section id="games-tab" class="tab-content hidden">
             <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-green-300">
                 <div class="flex items-center justify-between border-b-2 border-green-100 pb-4 mb-6">
@@ -421,7 +421,7 @@
             </div>
         </section>
 
-        <!-- -->
+        <!-- Grand Challenge Tab (Certificate presentation) -->
         <section id="challenge-tab" class="tab-content hidden">
             <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-purple-300">
                 <div class="flex items-center justify-between border-b-2 border-purple-100 pb-4 mb-6">
@@ -561,13 +561,59 @@
             }
         }
 
+        function getMandarinVoice() {
+            if (!('speechSynthesis' in window)) return null;
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices || voices.length === 0) return null;
+            
+            // 1. Strict Mainland China Mandarin Match (zh-CN, zh-Hans-CN, etc.)
+            let voice = voices.find(v => v.lang === 'zh-CN' || v.lang === 'zh-Hans-CN' || v.lang.toLowerCase() === 'zh_cn' || v.lang === 'zh-Hans');
+            if (voice) return voice;
+
+            // 2. Select standard, premium Mandarin voices by name (Apple Tian-Tian, Tingting, Xiaoxiao, Lili, Yating, Huihui)
+            voice = voices.find(v => {
+                const name = v.name.toLowerCase();
+                return (name.includes('tian-tian') || name.includes('tingting') || name.includes('lili') || name.includes('xiaoxiao') || name.includes('yating') || name.includes('huihui')) 
+                    && !name.includes('cantonese') && !name.includes('hong kong') && !name.includes('taiwan');
+            });
+            if (voice) return voice;
+
+            // 3. Filter out Cantonese-specific locales (HK, Cantonese, Sin-Ji, yue-HK) to prevent wrong Cantonese readings on iOS
+            const mandarinVoices = voices.filter(v => {
+                const lang = v.lang.toLowerCase();
+                const name = v.name.toLowerCase();
+                const isChinese = lang.startsWith('zh') || lang.startsWith('chn');
+                const isCantonese = lang.includes('hk') || lang.includes('yue') || name.includes('cantonese') || name.includes('hong kong') || name.includes('sin-ji');
+                return isChinese && !isCantonese;
+            });
+
+            if (mandarinVoices.length > 0) {
+                // If mainland is absent, prioritize Taiwan Mandarin (zh-TW) over any Cantonese defaults
+                const twVoice = mandarinVoices.find(v => v.lang.toLowerCase().includes('tw'));
+                if (twVoice) return twVoice;
+                return mandarinVoices[0];
+            }
+
+            // 4. Fallback to any Chinese voice
+            return voices.find(v => v.lang.toLowerCase().startsWith('zh'));
+        }
+
         function speakChinese(text) {
             if ('speechSynthesis' in window) {
-                // Cancel ongoing speaches
+                // Cancel ongoing speeches
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'zh-CN'; // Set voice explicitly to standard Mandarin Chinese
-                utterance.rate = 0.85; // Slightly slower, highly friendly for Pinyin learners
+                
+                // FORCE Mandarin voice allocation for iOS Safari compatibility
+                const mVoice = getMandarinVoice();
+                if (mVoice) {
+                    utterance.voice = mVoice;
+                    utterance.lang = mVoice.lang;
+                } else {
+                    utterance.lang = 'zh-CN'; // Ultimate fallback
+                }
+                
+                utterance.rate = 0.82; // Slightly slower, highly friendly for Pinyin learners
                 utterance.pitch = 1.15; // Bright tone
                 window.speechSynthesis.speak(utterance);
             } else {
@@ -613,7 +659,7 @@
                 { pinyin: 'e', read: '婀', tip: '扁扁嘴巴 e e e。嘴角兩邊扁扁往後拉。' },
                 { pinyin: 'i', read: '衣', tip: '牙齒對齊 i i i。嘴巴扁扁，露出牙齒。' },
                 { pinyin: 'u', read: '烏', tip: '嘴巴突突 u u u。嘴唇縮成一個圓圓的小洞。' },
-                { pinyin: 'ü', read: '淤', tip: '吹哨嘴巴 ü ü ü。發 i 的音，嘴唇圓起，像小魚吹泡.' }
+                { pinyin: 'ü', read: '淤', tip: '吹哨嘴巴 ü ü ü。發 i 的音，嘴唇圓起，像小魚吹泡。' }
             ],
             fuyunmu: [
                 { pinyin: 'ai', read: '哀', tip: '先發 a，然後快速滑向 i，音從強變弱。' },
@@ -719,7 +765,7 @@
             'ku1': '哭', 'ku2': '庫', 'ku3': '苦', 'ku4': '庫',
             'kai1': '開', 'kai2': '凱', 'kai3': '凱', 'kai4': '慨',
             'kui1': '盔', 'kui2': '奎', 'kui3': '傀', 'kui4': '愧',
-            'kao1': '尻', 'kao2': '考', 'kao3': '考', 'kao4': '靠',
+            'kao1': '考', 'kao2': '考', 'kao3': '考', 'kao4': '靠',
             'kou1': '摳', 'kou2': '口', 'kou3': '口', 'kou4': '扣',
             // h series
             'ha1': '哈', 'ha2': '蛤', 'ha3': '哈', 'ha4': '哈',
@@ -1372,6 +1418,15 @@
 
         // Initialize App on Window Load
         window.onload = function() {
+            if ('speechSynthesis' in window) {
+                // Pre-fetch voices asynchronously on iOS
+                window.speechSynthesis.getVoices();
+                if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                    window.speechSynthesis.onvoiceschanged = () => {
+                        window.speechSynthesis.getVoices();
+                    };
+                }
+            }
             switchTab('welcome');
         };
     </script>
