@@ -566,36 +566,43 @@
             const voices = window.speechSynthesis.getVoices();
             if (!voices || voices.length === 0) return null;
             
+            // Filter out all Cantonese-specific voices to prevent wrong Cantonese readings on iOS
+            const nonCantoneseVoices = voices.filter(v => {
+                const lang = v.lang.toLowerCase();
+                const name = v.name.toLowerCase();
+                const isCantonese = lang.includes('hk') || lang.includes('yue') || name.includes('cantonese') || name.includes('hong kong') || name.includes('sin-ji') || name.includes('sinji');
+                return !isCantonese;
+            });
+
+            if (nonCantoneseVoices.length === 0) return null;
+
             // 1. Strict Mainland China Mandarin Match (zh-CN, zh-Hans-CN, etc.)
-            let voice = voices.find(v => v.lang === 'zh-CN' || v.lang === 'zh-Hans-CN' || v.lang.toLowerCase() === 'zh_cn' || v.lang === 'zh-Hans');
+            let voice = nonCantoneseVoices.find(v => {
+                const lang = v.lang.toLowerCase();
+                return lang === 'zh-cn' || lang === 'zh-hans-cn' || lang === 'zh_cn' || lang === 'zh-hans';
+            });
             if (voice) return voice;
 
             // 2. Select standard, premium Mandarin voices by name (Apple Tian-Tian, Tingting, Xiaoxiao, Lili, Yating, Huihui)
-            voice = voices.find(v => {
+            voice = nonCantoneseVoices.find(v => {
                 const name = v.name.toLowerCase();
-                return (name.includes('tian-tian') || name.includes('tingting') || name.includes('lili') || name.includes('xiaoxiao') || name.includes('yating') || name.includes('huihui')) 
-                    && !name.includes('cantonese') && !name.includes('hong kong') && !name.includes('taiwan');
+                return name.includes('tian-tian') || name.includes('tingting') || name.includes('lili') || name.includes('xiaoxiao') || name.includes('yating') || name.includes('huihui') || name.includes('siri');
             });
             if (voice) return voice;
 
-            // 3. Filter out Cantonese-specific locales (HK, Cantonese, Sin-Ji, yue-HK) to prevent wrong Cantonese readings on iOS
-            const mandarinVoices = voices.filter(v => {
+            // 3. Fallback to Taiwan Mandarin (zh-TW, zh-Hant-TW), since Taiwan Mandarin uses standard Putonghua / Mandarin tones, unlike Cantonese!
+            let twVoice = nonCantoneseVoices.find(v => {
                 const lang = v.lang.toLowerCase();
-                const name = v.name.toLowerCase();
-                const isChinese = lang.startsWith('zh') || lang.startsWith('chn');
-                const isCantonese = lang.includes('hk') || lang.includes('yue') || name.includes('cantonese') || name.includes('hong kong') || name.includes('sin-ji');
-                return isChinese && !isCantonese;
+                return lang.includes('tw') || lang.includes('hant-tw');
             });
+            if (twVoice) return twVoice;
 
-            if (mandarinVoices.length > 0) {
-                // If mainland is absent, prioritize Taiwan Mandarin (zh-TW) over any Cantonese defaults
-                const twVoice = mandarinVoices.find(v => v.lang.toLowerCase().includes('tw'));
-                if (twVoice) return twVoice;
-                return mandarinVoices[0];
-            }
+            // 4. Fallback to any remaining non-Cantonese Chinese voice
+            let anyChinese = nonCantoneseVoices.find(v => v.lang.toLowerCase().startsWith('zh'));
+            if (anyChinese) return anyChinese;
 
-            // 4. Fallback to any Chinese voice
-            return voices.find(v => v.lang.toLowerCase().startsWith('zh'));
+            // 5. Ultimate fallback to the first non-Cantonese voice
+            return nonCantoneseVoices[0];
         }
 
         function speakChinese(text) {
