@@ -84,7 +84,6 @@
         <div class="pink-bubble w-24 h-24 top-[15%] left-[50%] -translate-x-1/2" style="animation-delay: 2s; animation-duration: 11s;"></div>
     </div>
 
-    <!-- -->
     <!-- Top Navigation Header -->
     <header class="relative z-10 bg-gradient-to-r from-red-400 via-orange-400 via-yellow-400 via-green-400 via-blue-400 to-indigo-400 p-1 shadow-lg">
         <div class="bg-white/90 backdrop-blur-sm px-6 py-4 flex flex-col md:flex-row items-center justify-between rounded-b-3xl">
@@ -113,7 +112,6 @@
         </div>
     </header>
 
-    <!-- -->
     <!-- MAIN INTERACTIVE HUB -->
     <main class="relative z-10 max-w-6xl mx-auto px-4 mt-8" id="app">
 
@@ -165,7 +163,6 @@
             </div>
         </section>
 
-        <!-- -->
         <!-- Flashcards Tab -->
         <section id="flashcards-tab" class="tab-content hidden">
             <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-red-300">
@@ -182,7 +179,7 @@
                     </div>
                 </div>
 
-                <!-- Flashcard sub-tabs (Arranged strictly: Tone -> Initial -> Simple Final -> Compound Final -> Erhua) -->
+                <!-- Flashcard sub-tabs -->
                 <div class="flex flex-wrap gap-2 mb-6 bg-red-50/50 p-2 rounded-2xl border border-red-100 justify-center">
                     <button onclick="filterFlashcards('shengdiao')" id="btn-fc-shengdiao" class="fc-sub-btn bg-red-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow transition-all">
                         1. 聲調符號
@@ -220,7 +217,6 @@
             </div>
         </section>
 
-        <!-- -->
         <!-- Practice Sandbox Tab -->
         <section id="practice-tab" class="tab-content hidden">
             <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-blue-300">
@@ -331,7 +327,6 @@
             </div>
         </section>
 
-        <!-- -->
         <!-- Games Arcade Tab -->
         <section id="games-tab" class="tab-content hidden">
             <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-green-300">
@@ -388,7 +383,7 @@
                     </div>
                 </div>
 
-                <!-- Game Container Panel (Hidden by default) -->
+                <!-- Game Arena (Hidden by default) -->
                 <div id="game-arena" class="hidden bg-slate-50 rounded-2xl border-2 border-slate-200 p-6 md:p-8 relative min-h-[350px] flex flex-col justify-between">
                     <!-- Top stats bar -->
                     <div class="flex items-center justify-between mb-6">
@@ -426,8 +421,7 @@
             </div>
         </section>
 
-        <!-- -->
-        <!-- Grand Challenge Tab (Certificate presentation) -->
+        <!-- Grand Challenge Tab -->
         <section id="challenge-tab" class="tab-content hidden">
             <div class="bg-white/95 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-purple-300">
                 <div class="flex items-center justify-between border-b-2 border-purple-100 pb-4 mb-6">
@@ -524,7 +518,6 @@
 
     </main>
 
-    <!-- -->
     <!-- CORE SYSTEM JAVASCRIPT -->
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -573,43 +566,48 @@
             const voices = window.speechSynthesis.getVoices();
             if (!voices || voices.length === 0) return null;
             
-            // Filter out all Cantonese-specific voices to prevent wrong Cantonese readings on iOS
-            const nonCantoneseVoices = voices.filter(v => {
+            // STRICT mainland China standard Mandarin (zh-CN / zh-Hans) voices filter
+            const mainlandCNVoices = voices.filter(v => {
                 const lang = v.lang.toLowerCase();
                 const name = v.name.toLowerCase();
+                
+                // Matches standard mainland CN codes
+                const isCN = lang.startsWith('zh-cn') || lang === 'zh_cn' || lang.includes('hans-cn') || lang.includes('hans');
+                
+                // Exclude Cantonese (Hong Kong, yue, sin-ji) to prevent tone chaos
                 const isCantonese = lang.includes('hk') || lang.includes('yue') || name.includes('cantonese') || name.includes('hong kong') || name.includes('sin-ji') || name.includes('sinji');
-                return !isCantonese;
+                
+                // Exclude Taiwan Mandarin as requested to stick STRICTLY to standard CN voices
+                const isTaiwan = lang.includes('tw') || name.includes('taiwan') || name.includes('mei-jia') || name.includes('meijia') || name.includes('yating');
+
+                return isCN && !isCantonese && !isTaiwan;
             });
 
-            if (nonCantoneseVoices.length === 0) return null;
+            if (mainlandCNVoices.length > 0) {
+                // Priority 1: High quality premium Chinese engines built into iOS / Mac
+                let premiumVoice = mainlandCNVoices.find(v => {
+                    const name = v.name.toLowerCase();
+                    return name.includes('tian-tian') || name.includes('tiantian') || name.includes('tingting') || name.includes('ting-ting') || name.includes('lili') || name.includes('xiaoxiao') || name.includes('siri');
+                });
+                if (premiumVoice) return premiumVoice;
+                
+                return mainlandCNVoices[0];
+            }
 
-            // 1. Strict Mainland China Mandarin Match (zh-CN, zh-Hans-CN, etc.)
-            let voice = nonCantoneseVoices.find(v => {
+            // Secondary general fallback containing "zh" but strictly ignoring Cantonese/Taiwanese
+            const fallbackCNVoices = voices.filter(v => {
                 const lang = v.lang.toLowerCase();
-                return lang === 'zh-cn' || lang === 'zh-hans-cn' || lang === 'zh_cn' || lang === 'zh-hans';
-            });
-            if (voice) return voice;
-
-            // 2. Select standard, premium Mandarin voices by name (Apple Tian-Tian, Tingting, Xiaoxiao, Lili, Yating, Huihui)
-            voice = nonCantoneseVoices.find(v => {
                 const name = v.name.toLowerCase();
-                return name.includes('tian-tian') || name.includes('tingting') || name.includes('lili') || name.includes('xiaoxiao') || name.includes('yating') || name.includes('huihui') || name.includes('siri');
+                const isCantonese = lang.includes('hk') || lang.includes('yue') || name.includes('cantonese') || name.includes('sin-ji');
+                const isTaiwan = lang.includes('tw') || name.includes('taiwan');
+                return lang.startsWith('zh') && !isCantonese && !isTaiwan;
             });
-            if (voice) return voice;
 
-            // 3. Fallback to Taiwan Mandarin (zh-TW, zh-Hant-TW), since Taiwan Mandarin uses standard Putonghua / Mandarin tones, unlike Cantonese!
-            let twVoice = nonCantoneseVoices.find(v => {
-                const lang = v.lang.toLowerCase();
-                return lang.includes('tw') || lang.includes('hant-tw');
-            });
-            if (twVoice) return twVoice;
+            if (fallbackCNVoices.length > 0) {
+                return fallbackCNVoices[0];
+            }
 
-            // 4. Fallback to any remaining non-Cantonese Chinese voice
-            let anyChinese = nonCantoneseVoices.find(v => v.lang.toLowerCase().startsWith('zh'));
-            if (anyChinese) return anyChinese;
-
-            // 5. Ultimate fallback to the first non-Cantonese voice
-            return nonCantoneseVoices[0];
+            return null;
         }
 
         function speakChinese(text) {
@@ -618,16 +616,18 @@
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
                 
-                // FORCE Mandarin voice allocation for iOS Safari compatibility
-                const mVoice = getMandarinVoice();
-                if (mVoice) {
-                    utterance.voice = mVoice;
-                    utterance.lang = mVoice.lang;
+                // Allocate exact standard Mainland Mandarin voice
+                const cnVoice = getMandarinVoice();
+                if (cnVoice) {
+                    utterance.voice = cnVoice;
+                    utterance.lang = cnVoice.lang;
+                    console.log("iOS/Desktop CN voice loaded:", cnVoice.name, cnVoice.lang);
                 } else {
-                    utterance.lang = 'zh-CN'; // Ultimate fallback
+                    utterance.lang = 'zh-CN'; // Fallback to standard zh-CN ISO standard
+                    console.log("Fallback lang set to zh-CN");
                 }
                 
-                utterance.rate = 0.82; // Slightly slower, highly friendly for Pinyin learners
+                utterance.rate = 0.82; // Slightly slower, highly friendly for kids
                 utterance.pitch = 1.15; // Bright tone
                 window.speechSynthesis.speak(utterance);
             } else {
@@ -637,10 +637,10 @@
 
         const PINYIN_DATA = {
             shengdiao: [
-                { pinyin: '¯', name: '第一聲（陰平）', read: '媽', example: '媽 mā (一聲高高平又平)', tip: '發音高而平，像拉長的「啊——」。' },
-                { pinyin: '´', name: '第二聲（陽平）', read: '麻', example: '麻 má (二聲就像上山坡)', tip: '聲音往上揚，像在驚訝地問：「啊？」' },
-                { pinyin: 'ˇ', name: '第三聲（上聲）', read: '馬', example: '馬 mǎ (三聲下坡又上坡)', tip: '聲音先降下去，再揚起來，拐個小彎。' },
-                { pinyin: '`', name: '第四聲（去聲）', read: '罵', example: '罵 mà (四聲就像下山坡)', tip: '短促有力地往下扔，像大聲答應：「啊！」' }
+                { pinyin: '¯', name: '第一聲', read: '媽', example: '媽 mā (一聲高高平又平)', tip: '發音高而平，像拉長的「啊——」。' },
+                { pinyin: '´', name: '第二聲', read: '麻', example: '麻 má (二聲就像上山坡)', tip: '聲音往上揚，像在驚訝地問：「啊？」' },
+                { pinyin: 'ˇ', name: '第三聲', read: '馬', example: '馬 mǎ (三聲下坡又上坡)', tip: '聲音先降下去，再揚起來，拐個小彎。' },
+                { pinyin: '`', name: '第四聲', read: '罵', example: '罵 mà (四聲就像下山坡)', tip: '短促有力地往下扔，像大聲答應：「啊！」' }
             ],
             shengmu: [
                 { pinyin: 'b', read: '玻', tip: '雙唇緊閉，然後突然打開，氣流衝出口腔。' },
@@ -804,7 +804,7 @@
             // x series
             'xi1': '西', 'xi2': '席', 'xi3': '喜', 'xi4': '戲',
             'xu1': '需', 'xu2': '徐', 'xu3': '許', 'xu4': '續',
-            'xie1': '些', 'xie2': '鞋', 'xie3': '寫', 'xie4': '謝',
+            'xie1': '些', 'xie2': '鞋', 'xie3': '寫', 'xie4': '寫',
             'xue1': '靴', 'xue2': '學', 'xue3': '雪', 'xue4': '穴',
             'xiu1': '修', 'xiu2': '袖', 'xiu3': '朽', 'xiu4': '秀',
             // zh series
@@ -870,7 +870,7 @@
             'sai1': '塞', 'sai2': '腮', 'sai3': '賽', 'sai4': '賽',
             'sui1': '雖', 'sui2': '隨', 'sui3': '歲', 'sui4': '碎',
             'sao1': '騷', 'sao2': '掃', 'sao3': '掃', 'sao4': '嫂',
-            'sou1': '搜', 'sou2': '艘', 'sou3': '抖', 'sou4': '罷',
+            'sou1': '搜', 'sou2': '艘', 'sou3': '抖', 'sou4': '嗽',
             // y series (y combines with finals to form syllables)
             'ya1': '鴨', 'ya2': '牙', 'ya3': '雅', 'ya4': '亞',
             'ye1': '耶', 'ye2': '爺', 'ye3': '野', 'ye4': '夜',
@@ -888,7 +888,7 @@
             'a1': '阿', 'a2': '啊', 'a3': '啊', 'a4': '啊',
             'o1': '喔', 'o2': '喔', 'o3': '喔', 'o4': '喔',
             'e1': '婀', 'e2': '額', 'e3': '惡', 'e4': '餓',
-            'i1': '衣', 'i2': '姨', 'i3': '椅', 'i4': '意',
+            'i1': '衣', 'i2': '意', 'i3': '椅', 'i4': '意',
             'u1': '烏', 'u2': '無', 'u3': '五', 'u4': '誤',
             'ü1': '淤', 'ü2': '魚', 'ü3': '雨', 'ü4': '玉',
             'ai1': '哀', 'ai2': '癌', 'ai3': '矮', 'ai4': '愛',
@@ -969,7 +969,6 @@
                         </div>
                     `;
                 } else {
-                    // Initials, Simple and Compound Finals -> display Pinyin directly with NO parenths mapping to retain focus.
                     cardContent = `
                         <div class="text-4xl font-extrabold text-slate-800 tracking-wider mb-2">${item.pinyin}</div>
                         <div class="text-[10px] text-slate-500 font-medium leading-tight px-1">${item.tip}</div>
@@ -1400,6 +1399,7 @@
             document.getElementById('challenge-complete-panel').classList.add('hidden');
         }
 
+        // UTILITIES
         function shuffleArray(array) {
             const arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -1430,10 +1430,9 @@
             }, 2500);
         }
 
-        // Initialize App on Window Load
         window.onload = function() {
             if ('speechSynthesis' in window) {
-                // Pre-fetch voices asynchronously on iOS
+                // Pre-fetch voices asynchronously to enable swift standard CN voice selection
                 window.speechSynthesis.getVoices();
                 if (window.speechSynthesis.onvoiceschanged !== undefined) {
                     window.speechSynthesis.onvoiceschanged = () => {
