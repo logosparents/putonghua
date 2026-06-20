@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Sans+HK:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body {
-            /* Smooth fallbacks to ensure "歡" & "拼" render in modern, unified sans-serif fonts */
+            /* Smooth fallbacks to ensure fonts render in modern, unified sans-serif fonts */
             font-family: 'M PLUS Rounded 1c', 'Noto Sans TC', 'Noto Sans HK', 'PingFang HK', 'Microsoft JhengHei', sans-serif;
             background: linear-gradient(135deg, #fef9e7 0%, #ebf5fb 100%);
             position: relative;
@@ -520,10 +520,18 @@
 
     <!-- CORE SYSTEM JAVASCRIPT -->
     <script>
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let audioCtx = null; // Lazy loaded global audio context to prevent immediate MacBook Safari crash
         
         function playSfx(type) {
             try {
+                // Initialize context only after a user gesture (fixes DOM Exception 18 Safari Crash)
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
@@ -563,75 +571,62 @@
 
         function getMandarinVoice() {
             if (!('speechSynthesis' in window)) return null;
-            const voices = window.speechSynthesis.getVoices();
-            if (!voices || voices.length === 0) return null;
-            
-            // STRICT mainland China standard Mandarin (zh-CN / zh-Hans) voices filter
-            const mainlandCNVoices = voices.filter(v => {
-                const lang = v.lang.toLowerCase();
-                const name = v.name.toLowerCase();
+            try {
+                const voices = window.speechSynthesis.getVoices();
+                if (!voices || voices.length === 0) return null;
                 
-                // Matches standard mainland CN codes
-                const isCN = lang.startsWith('zh-cn') || lang === 'zh_cn' || lang.includes('hans-cn') || lang.includes('hans');
-                
-                // Exclude Cantonese (Hong Kong, yue, sin-ji) to prevent tone chaos
-                const isCantonese = lang.includes('hk') || lang.includes('yue') || name.includes('cantonese') || name.includes('hong kong') || name.includes('sin-ji') || name.includes('sinji');
-                
-                // Exclude Taiwan Mandarin as requested to stick STRICTLY to standard CN voices
-                const isTaiwan = lang.includes('tw') || name.includes('taiwan') || name.includes('mei-jia') || name.includes('meijia') || name.includes('yating');
-
-                return isCN && !isCantonese && !isTaiwan;
-            });
-
-            if (mainlandCNVoices.length > 0) {
-                // Priority 1: High quality premium Chinese engines built into iOS / Mac
-                let premiumVoice = mainlandCNVoices.find(v => {
+                // Filter out standard Mandarin Chinese (zh-CN or zh-Hans). 
+                // We MUST strictly exclude Cantonese (HK, yue, sin-ji) to avoid iOS wrong tone glitch
+                // We also strictly exclude Taiwan Mandarin (TW, mei-jia, yating) as requested
+                const candidateVoices = voices.filter(v => {
+                    const lang = v.lang.toLowerCase();
                     const name = v.name.toLowerCase();
-                    return name.includes('tian-tian') || name.includes('tiantian') || name.includes('tingting') || name.includes('ting-ting') || name.includes('lili') || name.includes('xiaoxiao') || name.includes('siri');
+                    
+                    const isChinese = lang.startsWith('zh') || lang.startsWith('cmn');
+                    
+                    const isCantonese = lang.includes('hk') || lang.includes('yue') || name.includes('cantonese') || name.includes('hong kong') || name.includes('sin-ji') || name.includes('sinji');
+                    
+                    const isTaiwan = lang.includes('tw') || name.includes('taiwan') || name.includes('mei-jia') || name.includes('meijia') || name.includes('yating');
+
+                    return isChinese && !isCantonese && !isTaiwan;
                 });
-                if (premiumVoice) return premiumVoice;
-                
-                return mainlandCNVoices[0];
+
+                if (candidateVoices.length > 0) {
+                    // Prioritize premium mainland Chinese voices (Tian-Tian, Ting-Ting, Lili, Siri)
+                    const premiumVoice = candidateVoices.find(v => {
+                        const name = v.name.toLowerCase();
+                        return name.includes('tian-tian') || name.includes('tiantian') || name.includes('tingting') || name.includes('ting-ting') || name.includes('lili') || name.includes('xiaoxiao') || name.includes('siri');
+                    });
+                    return premiumVoice || candidateVoices[0];
+                }
+            } catch (e) {
+                console.error("Error matching standard mainland voices:", e);
             }
-
-            // Secondary general fallback containing "zh" but strictly ignoring Cantonese/Taiwanese
-            const fallbackCNVoices = voices.filter(v => {
-                const lang = v.lang.toLowerCase();
-                const name = v.name.toLowerCase();
-                const isCantonese = lang.includes('hk') || lang.includes('yue') || name.includes('cantonese') || name.includes('sin-ji');
-                const isTaiwan = lang.includes('tw') || name.includes('taiwan');
-                return lang.startsWith('zh') && !isCantonese && !isTaiwan;
-            });
-
-            if (fallbackCNVoices.length > 0) {
-                return fallbackCNVoices[0];
-            }
-
             return null;
         }
 
         function speakChinese(text) {
-            if ('speechSynthesis' in window) {
-                // Cancel ongoing speeches
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                
-                // Allocate exact standard Mainland Mandarin voice
-                const cnVoice = getMandarinVoice();
-                if (cnVoice) {
-                    utterance.voice = cnVoice;
-                    utterance.lang = cnVoice.lang;
-                    console.log("iOS/Desktop CN voice loaded:", cnVoice.name, cnVoice.lang);
-                } else {
-                    utterance.lang = 'zh-CN'; // Fallback to standard zh-CN ISO standard
-                    console.log("Fallback lang set to zh-CN");
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    
+                    // Allocate strict standard mainland CN voice to prevent iOS using Cantonese default
+                    const cnVoice = getMandarinVoice();
+                    if (cnVoice) {
+                        utterance.voice = cnVoice;
+                        utterance.lang = cnVoice.lang;
+                    } else {
+                        // Crucial fallback lang tag to let OS engine parse Mandarin characters
+                        utterance.lang = 'zh-CN'; 
+                    }
+                    
+                    utterance.rate = 0.82; // Slower, kid-friendly tempo
+                    utterance.pitch = 1.15; // Joyful high tone
+                    window.speechSynthesis.speak(utterance);
                 }
-                
-                utterance.rate = 0.82; // Slightly slower, highly friendly for kids
-                utterance.pitch = 1.15; // Bright tone
-                window.speechSynthesis.speak(utterance);
-            } else {
-                console.error("Speech Synthesis API is not supported in this browser.");
+            } catch (err) {
+                console.error("Standard SpeechSynthesis failed:", err);
             }
         }
 
@@ -699,7 +694,7 @@
             'ba1': '巴', 'ba2': '拔', 'ba3': '把', 'ba4': '爸',
             'bo1': '波', 'bo2': '脖', 'bo3': '跛', 'bo4': '播',
             'bi1': '逼', 'bi2': '鼻', 'bi3': '比', 'bi4': '必',
-            'bu1': '逋', 'bu2': '捕', 'bu3': '補', 'bu4': '步',
+            'bu1': '書', 'bu2': '捕', 'bu3': '補', 'bu4': '步',
             'bai1': '掰', 'bai2': '白', 'bai3': '百', 'bai4': '敗',
             'bei1': '杯', 'bei2': '北', 'bei3': '北', 'bei4': '貝',
             'bao1': '包', 'bao2': '雹', 'bao3': '飽', 'bao4': '報',
@@ -804,7 +799,7 @@
             // x series
             'xi1': '西', 'xi2': '席', 'xi3': '喜', 'xi4': '戲',
             'xu1': '需', 'xu2': '徐', 'xu3': '許', 'xu4': '續',
-            'xie1': '些', 'xie2': '鞋', 'xie3': '寫', 'xie4': '寫',
+            'xie1': '些', 'xie2': '鞋', 'xie3': '寫', 'xie4': '謝',
             'xue1': '靴', 'xue2': '學', 'xue3': '雪', 'xue4': '穴',
             'xiu1': '修', 'xiu2': '袖', 'xiu3': '朽', 'xiu4': '秀',
             // zh series
@@ -870,8 +865,8 @@
             'sai1': '塞', 'sai2': '腮', 'sai3': '賽', 'sai4': '賽',
             'sui1': '雖', 'sui2': '隨', 'sui3': '歲', 'sui4': '碎',
             'sao1': '騷', 'sao2': '掃', 'sao3': '掃', 'sao4': '嫂',
-            'sou1': '搜', 'sou2': '艘', 'sou3': '抖', 'sou4': '嗽',
-            // y series (y combines with finals to form syllables)
+            'sou1': '搜', 'sou2': '艘', 'sou3': '抖', 'sou4': '罷',
+            // y series
             'ya1': '鴨', 'ya2': '牙', 'ya3': '雅', 'ya4': '亞',
             'ye1': '耶', 'ye2': '爺', 'ye3': '野', 'ye4': '夜',
             'yi1': '衣', 'yi2': '移', 'yi3': '以', 'yi4': '意',
@@ -888,7 +883,7 @@
             'a1': '阿', 'a2': '啊', 'a3': '啊', 'a4': '啊',
             'o1': '喔', 'o2': '喔', 'o3': '喔', 'o4': '喔',
             'e1': '婀', 'e2': '額', 'e3': '惡', 'e4': '餓',
-            'i1': '衣', 'i2': '意', 'i3': '椅', 'i4': '意',
+            'i1': '衣', 'i2': '姨', 'i3': '椅', 'i4': '意',
             'u1': '烏', 'u2': '無', 'u3': '五', 'u4': '誤',
             'ü1': '淤', 'ü2': '魚', 'ü3': '雨', 'ü4': '玉',
             'ai1': '哀', 'ai2': '癌', 'ai3': '矮', 'ai4': '愛',
@@ -1123,7 +1118,6 @@
             }
         }
 
-        // ARCADE / MINI GAMES LOGIC
         let currentGameType = '';
         let currentQuestionIndex = 0;
         let gameScore = 0;
@@ -1151,7 +1145,6 @@
         function loadNextGameQuestion() {
             currentQuestionIndex++;
             if (currentQuestionIndex > 5) {
-                // Game Finished
                 playSfx('correct');
                 showNotification(`🎉 挑戰完成！你在這款遊戲中表現極佳，獲得了更多拼音知識！`, 'success');
                 quitGame();
@@ -1172,7 +1165,6 @@
                 document.getElementById('game-title').innerText = '🚗 聲調碰碰車';
                 document.getElementById('game-instruction').innerText = '請按黃色喇叭聽讀音，點擊正確的聲調氣球：';
 
-                // Pick random syllable
                 const toneTargets = [
                     { char: '媽', tone: '1', pinyin: 'mā' },
                     { char: '麻', tone: '2', pinyin: 'má' },
@@ -1190,10 +1182,8 @@
                 };
 
                 listenBtn.onclick = () => speakChinese(currentQuestionData.audio);
-                // Trigger first audio speak automatically with delay
                 setTimeout(() => speakChinese(currentQuestionData.audio), 400);
 
-                // Inject 4 Tones
                 const tonesArr = [
                     { num: '1', label: '第一聲 ¯' },
                     { num: '2', label: '第二聲 ´' },
@@ -1213,7 +1203,6 @@
                 document.getElementById('game-title').innerText = 'Carousel 聲母旋轉木馬';
                 document.getElementById('game-instruction').innerText = '仔細聆聽發音，找出正確的聲母：';
 
-                // Choose a random initial
                 const randomInitial = PINYIN_DATA.shengmu[Math.floor(Math.random() * PINYIN_DATA.shengmu.length)];
                 currentQuestionData = {
                     audio: randomInitial.read,
@@ -1223,7 +1212,6 @@
                 listenBtn.onclick = () => speakChinese(currentQuestionData.audio);
                 setTimeout(() => speakChinese(currentQuestionData.audio), 400);
 
-                // Gather 3 wrong options
                 let distractors = PINYIN_DATA.shengmu
                     .filter(item => item.pinyin !== randomInitial.pinyin)
                     .map(item => item.pinyin);
@@ -1288,7 +1276,6 @@
                 showNotification(`😢 差一點點！正確答案是：【 ${currentQuestionData.answer} 】`, 'error');
             }
 
-            // Immediately load next
             loadNextGameQuestion();
         }
 
@@ -1297,7 +1284,6 @@
             resetArcade();
         }
 
-        // GRAND CHALLENGE LOGIC
         let challengeIndex = 0;
         let challengeCorrectCount = 0;
         let challengerNameInput = '';
@@ -1325,7 +1311,6 @@
         function loadChallengeQuestion() {
             challengeIndex++;
             if (challengeIndex > 5) {
-                // Done!
                 finishGrandChallenge();
                 return;
             }
@@ -1340,7 +1325,6 @@
             
             const listenBtn = document.getElementById('btn-challenge-listen');
 
-            // Setup questions spanning Tone, Initials, Finals, and Erhua
             const pool = [
                 // Q1 Tone
                 { type: 'tone', audio: '馬', prompt: '請問剛才發的「馬」是第幾聲？', answer: '3', choices: ['1', '2', '3', '4'] },
@@ -1399,7 +1383,6 @@
             document.getElementById('challenge-complete-panel').classList.add('hidden');
         }
 
-        // UTILITIES
         function shuffleArray(array) {
             const arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -1410,7 +1393,6 @@
         }
 
         function showNotification(message, type = 'info') {
-            // Remove existing notification banner if present
             const oldBanner = document.getElementById('app-notification');
             if (oldBanner) oldBanner.remove();
 
@@ -1430,15 +1412,19 @@
             }, 2500);
         }
 
+        // Initialize App inside fully guarded block to prevent browser crashes
         window.onload = function() {
-            if ('speechSynthesis' in window) {
-                // Pre-fetch voices asynchronously to enable swift standard CN voice selection
-                window.speechSynthesis.getVoices();
-                if (window.speechSynthesis.onvoiceschanged !== undefined) {
-                    window.speechSynthesis.onvoiceschanged = () => {
-                        window.speechSynthesis.getVoices();
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.getVoices();
+                    window.speechSynthesis.onvoiceschanged = function() {
+                        try {
+                            window.speechSynthesis.getVoices();
+                        } catch (e) {}
                     };
                 }
+            } catch (err) {
+                console.log("Speech synthesis init bypassed safely:", err);
             }
             switchTab('welcome');
         };
